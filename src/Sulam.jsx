@@ -424,7 +424,9 @@ function Header({ onMenuToggle, showBack, onBack, onNavigate }) {
 // FILTER SIDEBAR / DRAWER
 // ============================================================
 function FilterPanel({ filters, setFilters, canti, isDrawer, onClose }) {
-  const tempi = useMemo(() => [...new Set(canti.map(c => c.Tempo_Liturgico).filter(Boolean))].sort(), [canti]);
+  const tempi = useMemo(() => [...new Set(
+    canti.flatMap(c => c.Tempo_Liturgico?.split(",").map(t => t.trim()) ?? []).filter(Boolean)
+  )].sort(), [canti]);
   const momenti = useMemo(() => [...new Set(canti.map(c => c.Momento_Messa).filter(Boolean))].sort(), [canti]);
   const generi = useMemo(() => [...new Set(canti.map(c => c.Genere).filter(Boolean))].sort(), [canti]);
 
@@ -965,7 +967,7 @@ function HomePage({ onSelectCanto }) {
 
   const filtered = useMemo(() => {
     return allCanti.filter(c => {
-      if (filters.tempo && c.Tempo_Liturgico !== filters.tempo) return false;
+      if (filters.tempo && !c.Tempo_Liturgico?.split(",").map(t => t.trim()).includes(filters.tempo)) return false;
       if (filters.momento && c.Momento_Messa !== filters.momento) return false;
       if (filters.genere && c.Genere !== filters.genere) return false;
       if (search) {
