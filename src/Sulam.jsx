@@ -542,7 +542,9 @@ function CantoCard({ canto, onClick, index }) {
       )}
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-      {canto.Tempo_Liturgico?.split(",").map(t => t.trim()).filter(Boolean).map(t => (  <Badge key={t} label={t} />))}
+      {canto.Tempo_Liturgico?.split(",").map(t => t.trim()).filter(Boolean).map(t => (
+  <Badge key={t} label={t} />
+))}
         {canto.Momento_Messa && <Badge label={canto.Momento_Messa} />}
         {canto.Genere && <Badge label={canto.Genere} />}
       </div>
@@ -776,7 +778,9 @@ function CantoViewer({ canto, onBack }) {
         )}
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-        {canto.Tempo_Liturgico?.split(",").map(t => t.trim()).filter(Boolean).map(t => (  <Badge key={t} label={t} />))}
+          {canto.Tempo_Liturgico?.split(",").map(t => t.trim()).filter(Boolean).map(t => (
+  <Badge key={t} label={t} />
+))}
           {canto.Momento_Messa && <Badge label={canto.Momento_Messa} />}
           {canto.Genere && <Badge label={canto.Genere} />}
           {canto.Album && <Badge label={`📀 ${canto.Album}`} />}
@@ -961,7 +965,7 @@ function HomePage({ onSelectCanto }) {
 
   const filtered = useMemo(() => {
     return allCanti.filter(c => {
-      if (filters.tempo && !c.Tempo_Liturgico?.split(",").map(t => t.trim()).includes(filters.tempo)) return false;
+      if (filters.tempo && c.Tempo_Liturgico !== filters.tempo) return false;
       if (filters.momento && c.Momento_Messa !== filters.momento) return false;
       if (filters.genere && c.Genere !== filters.genere) return false;
       if (search) {
