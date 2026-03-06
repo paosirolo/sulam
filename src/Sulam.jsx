@@ -115,6 +115,14 @@ function fuzzyMatch(text, query) {
   return qi === q.length;
 }
 
+function splitTags(value) {
+  if (!value) return [];
+  return String(value)
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
 const BADGE_COLORS = {
   // ── Tempo Liturgico ──────────────────────────────────────────
  "Avvento":               { bg: "#e8e7f7", color: "#3730a3" },        // blu notte → indaco su lavanda chiara
@@ -424,9 +432,23 @@ function Header({ onMenuToggle, showBack, onBack, onNavigate }) {
 // FILTER SIDEBAR / DRAWER
 // ============================================================
 function FilterPanel({ filters, setFilters, canti, isDrawer, onClose }) {
-  const tempi = useMemo(() => [...new Set(canti.flatMap(c => c.Tempo_Liturgico?.split(",").map(t => t.trim()) ?? []).filter(Boolean)  )].sort(), [canti]);
+  const tempi = useMemo(
+    () => [
+      ...new Set(
+        canti.flatMap((c) => splitTags(c.Tempo_Liturgico)).filter(Boolean)
+      ),
+    ].sort(),
+    [canti]
+  );
   const momenti = useMemo(() => [...new Set(canti.map(c => c.Momento_Messa).filter(Boolean))].sort(), [canti]);
-  const generi = useMemo(() => [...new Set(canti.map(c => c.Genere).filter(Boolean))].sort(), [canti]);
+  const generi = useMemo(
+    () => [
+      ...new Set(
+        canti.flatMap((c) => splitTags(c.Genere)).filter(Boolean)
+      ),
+    ].sort(),
+    [canti]
+  );
 
   const content = (
     <div style={{ padding: isDrawer ? "24px" : "0", height: "100%", overflowY: "auto" }}>
@@ -542,11 +564,13 @@ function CantoCard({ canto, onClick, index }) {
       )}
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-      {canto.Tempo_Liturgico?.split(",").map(t => t.trim()).filter(Boolean).map(t => (
-  <Badge key={t} label={t} />
-))}
+        {splitTags(canto.Tempo_Liturgico).map((t) => (
+          <Badge key={t} label={t} />
+        ))}
         {canto.Momento_Messa && <Badge label={canto.Momento_Messa} />}
-        {canto.Genere && <Badge label={canto.Genere} />}
+        {splitTags(canto.Genere).map((g) => (
+          <Badge key={g} label={g} />
+        ))}
       </div>
 
       {canto.link_ascolto && (
@@ -778,13 +802,15 @@ function CantoViewer({ canto, onBack }) {
         )}
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-          {canto.Tempo_Liturgico?.split(",").map(t => t.trim()).filter(Boolean).map(t => (
-  <Badge key={t} label={t} />
-))}
-          {canto.Momento_Messa && <Badge label={canto.Momento_Messa} />}
-          {canto.Genere && <Badge label={canto.Genere} />}
-          {canto.Album && <Badge label={`📀 ${canto.Album}`} />}
-        </div>
+        {splitTags(canto.Tempo_Liturgico).map((t) => (
+          <Badge key={t} label={t} />
+        ))}
+        {canto.Momento_Messa && <Badge label={canto.Momento_Messa} />}
+        {splitTags(canto.Genere).map((g) => (
+          <Badge key={g} label={g} />
+        ))}
+        {canto.Album && <Badge label={`📀 ${canto.Album}`} />}
+      </div>
       </div>
 
       {/* Toolbar */}
@@ -965,14 +991,20 @@ function HomePage({ onSelectCanto }) {
 
   const filtered = useMemo(() => {
     return allCanti.filter(c => {
-      if (filters.tempo && !c.Tempo_Liturgico?.split(",").map(t => t.trim()).includes(filters.tempo)) return false;
+      if (filters.tempo && !splitTags(c.Tempo_Liturgico).includes(filters.tempo)) return false;
       if (filters.momento && c.Momento_Messa !== filters.momento) return false;
-      if (filters.genere && c.Genere !== filters.genere) return false;
+      if (filters.genere) {
+        const generiCanto = splitTags(c.Genere);
+        if (!generiCanto.includes(filters.genere)) return false;
+      }
       if (search) {
         const matchTitle = fuzzyMatch(c.Title, search);
         const matchAutori = fuzzyMatch(c.Autori, search);
-        // For content we do simple includes
-        if (!matchTitle && !matchAutori) return false;
+        const searchLower = search.toLowerCase();
+        const matchGenere = splitTags(c.Genere)
+          .map(g => g.toLowerCase())
+          .includes(searchLower);
+        if (!matchTitle && !matchAutori && !matchGenere) return false;
       }
       return true;
     });
