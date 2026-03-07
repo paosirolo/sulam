@@ -886,6 +886,10 @@ function CantoViewer({ canto, onBack }) {
   const [viewIncremented, setViewIncremented] = useState(false);
   const [showChords, setShowChords] = useState(false);
   const [transpose, setTranspose] = useState(0);
+  const hasChords = useMemo(
+    () => /\[[^\]]+\]/.test(canto.Content || ""),
+    [canto.Content]
+  );
   const contentRef = useRef(null);
   const scrollIntervalRef = useRef(null);
 
@@ -1004,38 +1008,42 @@ function CantoViewer({ canto, onBack }) {
           </div>
         )}
 
-        {/* Divider */}
-        <div style={{ width: 1, height: 28, background: "var(--sky-100)" }} />
+        {hasChords && (
+          <>
+            {/* Divider */}
+            <div style={{ width: 1, height: 28, background: "var(--sky-100)" }} />
 
-        {/* Chords toggle */}
-        <button
-          className={`btn ${showChords ? "btn-primary" : "btn-secondary"}`}
-          onClick={() => setShowChords(v => !v)}
-          style={{ gap: 6 }}
-        >
-          ♫ Accordi
-        </button>
+            {/* Chords toggle */}
+            <button
+              className={`btn ${showChords ? "btn-primary" : "btn-secondary"}`}
+              onClick={() => setShowChords(v => !v)}
+              style={{ gap: 6 }}
+            >
+              ♫ Accordi
+            </button>
 
-        {/* Transpose controls */}
-        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-          <button
-            className="btn btn-secondary"
-            onClick={() => setTranspose(t => t - 1)}
-            style={{ padding: "6px 10px" }}
-          >
-            -1
-          </button>
-          <span style={{ fontSize: "0.78rem", color: "var(--gray-400)", minWidth: 40, textAlign: "center" }}>
-            {transpose === 0 ? "0" : `${transpose > 0 ? "+" : ""}${transpose}`}
-          </span>
-          <button
-            className="btn btn-secondary"
-            onClick={() => setTranspose(t => t + 1)}
-            style={{ padding: "6px 10px" }}
-          >
-            +1
-          </button>
-        </div>
+            {/* Transpose controls */}
+            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <button
+                className="btn btn-secondary"
+                onClick={() => setTranspose(t => t - 1)}
+                style={{ padding: "6px 10px" }}
+              >
+                -1
+              </button>
+              <span style={{ fontSize: "0.78rem", color: "var(--gray-400)", minWidth: 40, textAlign: "center" }}>
+                {transpose === 0 ? "0" : `${transpose > 0 ? "+" : ""}${transpose}`}
+              </span>
+              <button
+                className="btn btn-secondary"
+                onClick={() => setTranspose(t => t + 1)}
+                style={{ padding: "6px 10px" }}
+              >
+                +1
+              </button>
+            </div>
+          </>
+        )}
 
         {canto.link_ascolto && (
           <>
