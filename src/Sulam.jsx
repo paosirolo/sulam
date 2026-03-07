@@ -123,6 +123,81 @@ function splitTags(value) {
     .filter(Boolean);
 }
 
+// ============================================================
+// CHORD / CHORDPRO UTILITIES
+// ============================================================
+
+const NOTE_NAMES_SHARP = [
+  "Do",
+  "Do#",
+  "Re",
+  "Re#",
+  "Mi",
+  "Fa",
+  "Fa#",
+  "Sol",
+  "Sol#",
+  "La",
+  "La#",
+  "Si",
+];
+
+const NOTE_INDEX = {
+  do: 0,
+  "do#": 1,
+  reb: 1,
+  re: 2,
+  "re#": 3,
+  mib: 3,
+  mi: 4,
+  fa: 5,
+  "fa#": 6,
+  solb: 6,
+  sol: 7,
+  "sol#": 8,
+  lab: 8,
+  la: 9,
+  "la#": 10,
+  sib: 10,
+  si: 11,
+};
+
+function transposeSingleChordSymbol(symbol, steps) {
+  if (!symbol || !steps) return symbol;
+
+  const match = symbol.match(/^(Do|Re|Mi|Fa|Sol|La|Si)(#|b)?(.*)$/i);
+  if (!match) return symbol;
+
+  const rootName = match[1];
+  const accidental = match[2] || "";
+  const suffix = match[3] || "";
+
+  const key = (rootName + accidental).toLowerCase();
+  const index = NOTE_INDEX[key];
+  if (index === undefined) return symbol;
+
+  const normalizedSteps = ((steps % 12) + 12) % 12;
+  const newIndex = (index + normalizedSteps) % 12;
+  const newRoot = NOTE_NAMES_SHARP[newIndex];
+
+  return newRoot + suffix;
+}
+
+function transposeChord(chord, steps) {
+  if (!chord || !steps) return chord;
+  if (!/\[?[A-G]/i.test(chord) && !/(Do|Re|Mi|Fa|Sol|La|Si)/i.test(chord)) return chord;
+
+  const parts = chord.split("/");
+  const main = parts[0];
+  const bass = parts[1];
+
+  const mainT = transposeSingleChordSymbol(main, steps);
+  if (!bass) return mainT;
+
+  const bassT = transposeSingleChordSymbol(bass, steps);
+  return `${mainT}/${bassT}`;
+}
+
 const BADGE_COLORS = {
   // ── Tempo Liturgico ──────────────────────────────────────────
  "Avvento":               { bg: "#e8e7f7", color: "#3730a3" },        // blu notte → indaco su lavanda chiara
@@ -729,6 +804,77 @@ function parseChordPro(text) {
   if (currentSection.lines.length) sections.push(currentSection);
   return sections;
 }
+
+function ChordProLine({ line, showChords, transpose, fontSize, isChorus }) {
+  const chordRegex = /\[([^\]]+)\]/g;
+
+  let hasChord = false;
+  let chordLine = "";
+  let lyricLine = "";
+  let lastIndex = 0;
+
+  let match;
+  while ((match = chordRegex.exec(line)) !== null) {
+    hasChord = true;
+    const textSegment = line.slice(lastIndex, match.index);
+    lyricLine += textSegment;
+    chordLine += " ".repeat(textSegment.length);
+
+    const rawChord = match[1];
+    const transposed = transpose ? transposeChord(rawChord, transpose) : rawChord;
+    chordLine += transposed;
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  const tail = line.slice(lastIndex);
+  lyricLine += tail;
+  chordLine += " ".repeat(tail.length);
+
+  if (!showChords || !hasChord) {
+    const clean = line.replace(/\[[^\]]+\]/g, "");
+    return (
+      <pre
+        className="song-content"
+        style={{
+          fontSize: `${fontSize}px`,
+          fontWeight: isChorus ? 700 : 400,
+          color: isChorus ? "var(--sky-700)" : "var(--gray-700)",
+          marginBottom: 0,
+        }}
+      >
+        {clean}
+      </pre>
+    );
+  }
+
+  return (
+    <>
+      <pre
+        className="song-content"
+        style={{
+          fontSize: `${Math.max(fontSize - 2, 11)}px`,
+          fontWeight: 700,
+          color: "var(--sky-700)",
+          marginBottom: 0,
+        }}
+      >
+        {chordLine}
+      </pre>
+      <pre
+        className="song-content"
+        style={{
+          fontSize: `${fontSize}px`,
+          fontWeight: isChorus ? 700 : 400,
+          color: isChorus ? "var(--sky-700)" : "var(--gray-700)",
+          marginBottom: 0,
+        }}
+      >
+        {lyricLine}
+      </pre>
+    </>
+  );
+}
 // ============================================================
 // CANTO VIEWER
 // ============================================================
@@ -738,6 +884,8 @@ function CantoViewer({ canto, onBack }) {
   const [scrollSpeed, setScrollSpeed] = useState(30);
   const [showSegnalazione, setShowSegnalazione] = useState(false);
   const [viewIncremented, setViewIncremented] = useState(false);
+  const [showChords, setShowChords] = useState(false);
+  const [transpose, setTranspose] = useState(0);
   const contentRef = useRef(null);
   const scrollIntervalRef = useRef(null);
 
@@ -856,6 +1004,39 @@ function CantoViewer({ canto, onBack }) {
           </div>
         )}
 
+        {/* Divider */}
+        <div style={{ width: 1, height: 28, background: "var(--sky-100)" }} />
+
+        {/* Chords toggle */}
+        <button
+          className={`btn ${showChords ? "btn-primary" : "btn-secondary"}`}
+          onClick={() => setShowChords(v => !v)}
+          style={{ gap: 6 }}
+        >
+          ♫ Accordi
+        </button>
+
+        {/* Transpose controls */}
+        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          <button
+            className="btn btn-secondary"
+            onClick={() => setTranspose(t => t - 1)}
+            style={{ padding: "6px 10px" }}
+          >
+            -1
+          </button>
+          <span style={{ fontSize: "0.78rem", color: "var(--gray-400)", minWidth: 40, textAlign: "center" }}>
+            {transpose === 0 ? "0" : `${transpose > 0 ? "+" : ""}${transpose}`}
+          </span>
+          <button
+            className="btn btn-secondary"
+            onClick={() => setTranspose(t => t + 1)}
+            style={{ padding: "6px 10px" }}
+          >
+            +1
+          </button>
+        </div>
+
         {canto.link_ascolto && (
           <>
             <div style={{ width: 1, height: 28, background: "var(--sky-100)" }} />
@@ -877,42 +1058,57 @@ function CantoViewer({ canto, onBack }) {
         }}
         className={isScrolling ? "scrolling-active" : ""}
       >
-      
-      {canto.Content ? parseChordPro(canto.Content).map((section, i) => (
-  <div key={i} style={section.type === "chorus" ? {
-    borderLeft: "3px solid var(--sky-400)",
-    paddingLeft: 16,
-    marginBottom: 16,
-  } : { marginBottom: 16 }}>
-    {section.lines.map((line, j) =>
-      line === "__CHORUS_REPEAT__" ? (
-        <div key={j} style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 6,
-          margin: "6px 0",
-          padding: "3px 10px",
-          borderRadius: 999,
-          background: "var(--sky-100)",
-          color: "var(--sky-600)",
-          fontSize: `${Math.max(fontSize - 2, 11)}px`,
-          fontWeight: 700,
-          fontFamily: "'Montserrat', sans-serif",
-          letterSpacing: "0.04em",
-        }}>
-          ↩ Rit.
-        </div>
-      ) : (
-        <pre key={j} className="song-content" style={{
-          fontSize: `${fontSize}px`,
-          fontWeight: section.type === "chorus" ? 700 : 400,
-          color: section.type === "chorus" ? "var(--sky-700)" : "var(--gray-700)",
-          marginBottom: 0,
-        }}>{line}</pre>
-      )
-    )}
-  </div>
-)) : <p style={{ color: "var(--gray-400)" }}>Testo non disponibile.</p>}
+        {canto.Content ? (
+          parseChordPro(canto.Content).map((section, i) => (
+            <div
+              key={i}
+              style={
+                section.type === "chorus"
+                  ? {
+                      borderLeft: "3px solid var(--sky-400)",
+                      paddingLeft: 16,
+                      marginBottom: 16,
+                    }
+                  : { marginBottom: 16 }
+              }
+            >
+              {section.lines.map((line, j) =>
+                line === "__CHORUS_REPEAT__" ? (
+                  <div
+                    key={j}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 6,
+                      margin: "6px 0",
+                      padding: "3px 10px",
+                      borderRadius: 999,
+                      background: "var(--sky-100)",
+                      color: "var(--sky-600)",
+                      fontSize: `${Math.max(fontSize - 2, 11)}px`,
+                      fontWeight: 700,
+                      fontFamily: "'Montserrat', sans-serif",
+                      letterSpacing: "0.04em",
+                    }}
+                  >
+                    ↩ Rit.
+                  </div>
+                ) : (
+                  <ChordProLine
+                    key={j}
+                    line={line}
+                    showChords={showChords}
+                    transpose={transpose}
+                    fontSize={fontSize}
+                    isChorus={section.type === "chorus"}
+                  />
+                )
+              )}
+            </div>
+          ))
+        ) : (
+          <p style={{ color: "var(--gray-400)" }}>Testo non disponibile.</p>
+        )}
       </div>
 
       {/* Segnalazione */}
