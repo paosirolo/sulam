@@ -27,6 +27,11 @@ const supabase = {
       const builder = {
         eq: (col, val) => { filters.push(`${col}=eq.${encodeURIComponent(val)}`); return builder; },
         ilike: (col, val) => { filters.push(`${col}=ilike.${encodeURIComponent(val)}`); return builder; },
+        in: (col, vals) => {
+          const list = Array.isArray(vals) ? vals.join(",") : vals;
+          filters.push(`${col}=in.(${encodeURIComponent(list)})`);
+          return builder;
+        },
         order: (col, { ascending = true } = {}) => { orderStr = `&order=${col}.${ascending ? "asc" : "desc"}`; return builder; },
         range: (from, to) => { rangeHeader = `${from}-${to}`; return builder; },
         single: () => builder,
@@ -1336,6 +1341,240 @@ function HomePage({ onSelectCanto }) {
 }
 
 // ============================================================
+// LISTA PAGE
+// ============================================================
+
+function ListaPage({ slug }) {
+  const [loading, setLoading] = useState(true);
+  const [lista, setLista] = useState(null);
+  const [canti, setCanti] = useState([]);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      setLista(null);
+      setCanti([]);
+
+      try {
+        const { data, error: listaError } = await supabase
+          .from("liste")
+          .select("id, slug, titolo, sottotitolo, canti_ids")
+          .eq("slug", slug);
+
+        if (listaError) throw listaError;
+
+        if (!data || data.length === 0) {
+          if (!cancelled) {
+            setLista(null);
+            setLoading(false);
+          }
+          return;
+        }
+
+        const row = data[0];
+        if (cancelled) return;
+        setLista(row);
+
+        const ids = String(row.canti_ids || "")
+          .split(",")
+          .map((part) => parseInt(part.trim(), 10))
+          .filter((n) => Number.isFinite(n));
+
+        if (ids.length === 0) {
+          if (!cancelled) setLoading(false);
+          return;
+        }
+
+        const { data: cantiData, error: cantiError } = await supabase
+          .from("sulam_canti")
+          .select("id, Title, Autori, Tempo_Liturgico, Momento_Messa")
+          .in("id", ids);
+
+        if (cantiError) throw cantiError;
+
+        const byId = new Map((cantiData || []).map((c) => [c.id, c]));
+        const ordered = ids
+          .map((id) => byId.get(id))
+          .filter(Boolean);
+
+        if (!cancelled) {
+          setCanti(ordered);
+          setLoading(false);
+        }
+      } catch {
+        if (!cancelled) {
+          setError("Errore nel caricamento della lista.");
+          setLoading(false);
+        }
+      }
+    };
+
+    load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div style={{ maxWidth: 960, margin: "0 auto", padding: "24px 16px 80px" }}>
+        <div
+          style={{
+            background: "linear-gradient(135deg, var(--sky-500) 0%, var(--sky-700) 100%)",
+            borderRadius: "var(--radius)",
+            padding: "24px 20px",
+            marginBottom: 20,
+            color: "white",
+            boxShadow: "var(--shadow-sm)",
+          }}
+        >
+          <div className="skeleton" style={{ height: 20, width: "60%", marginBottom: 8 }} />
+          <div className="skeleton" style={{ height: 14, width: "40%" }} />
+        </div>
+        <div className="canti-grid">
+          {Array(4)
+            .fill(0)
+            .map((_, i) => (
+              <SkeletonCard key={i} />
+            ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ maxWidth: 720, margin: "0 auto", padding: "40px 16px 80px", textAlign: "center" }}>
+        <p style={{ color: "#ef4444", fontWeight: 600, marginBottom: 4 }}>{error}</p>
+      </div>
+    );
+  }
+
+  if (!lista) {
+    return (
+      <div style={{ maxWidth: 720, margin: "0 auto", padding: "40px 16px 80px", textAlign: "center" }}>
+        <p style={{ fontWeight: 600, color: "var(--gray-700)", marginBottom: 4 }}>Lista non trovata</p>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ maxWidth: 960, margin: "0 auto", padding: "24px 16px 80px" }} className="fade-in">
+      <div
+        style={{
+          background: "linear-gradient(135deg, var(--sky-500) 0%, var(--sky-700) 100%)",
+          borderRadius: "var(--radius)",
+          padding: "24px 24px",
+          marginBottom: 24,
+          color: "white",
+          boxShadow: "var(--shadow-sm)",
+        }}
+      >
+        <p
+          style={{
+            fontSize: "0.75rem",
+            textTransform: "uppercase",
+            letterSpacing: "0.12em",
+            opacity: 0.8,
+            marginBottom: 6,
+            fontWeight: 600,
+          }}
+        >
+          Lista
+        </p>
+        <h1
+          style={{
+            fontFamily: "'Montserrat', sans-serif",
+            fontWeight: 800,
+            fontSize: "clamp(1.4rem, 4vw, 2rem)",
+            marginBottom: 4,
+          }}
+        >
+          {lista.titolo || lista.title || ""}
+        </h1>
+        {(lista.sottotitolo || lista.subtitle) && (
+          <p style={{ fontSize: "0.9rem", opacity: 0.9 }}>
+            {lista.sottotitolo || lista.subtitle}
+          </p>
+        )}
+      </div>
+
+      {canti.length === 0 ? (
+        <p style={{ color: "var(--gray-400)", fontSize: "0.9rem" }}>Nessun canto in questa lista.</p>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {canti.map((canto, index) => (
+            <div
+              key={canto.id}
+              className="card"
+              style={{
+                padding: "14px 16px",
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 12,
+              }}
+            >
+              <div
+                style={{
+                  minWidth: 28,
+                  height: 28,
+                  borderRadius: "999px",
+                  background: "var(--sky-100)",
+                  color: "var(--sky-700)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "0.8rem",
+                  fontWeight: 700,
+                  fontFamily: "'Montserrat', sans-serif",
+                }}
+              >
+                {index + 1}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <h3
+                  style={{
+                    fontWeight: 700,
+                    fontSize: "0.98rem",
+                    color: "var(--gray-800)",
+                    marginBottom: 4,
+                  }}
+                >
+                  {canto.Title}
+                </h3>
+                {canto.Autori && (
+                  <p
+                    style={{
+                      fontSize: "0.8rem",
+                      color: "var(--sky-600)",
+                      marginBottom: 8,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {canto.Autori}
+                  </p>
+                )}
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {splitTags(canto.Tempo_Liturgico).map((t) => (
+                    <Badge key={t} label={t} />
+                  ))}
+                  {canto.Momento_Messa && <Badge label={canto.Momento_Messa} />}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================================
 // ABOUT PAGE
 // ============================================================
 function AboutPage() {
@@ -1535,10 +1774,20 @@ function Footer({ onNavigate }) {
 // MAIN APP
 // ============================================================
 export default function App() {
-  const [page, setPage] = useState("home"); // "home" | "canto" | "about" | "privacy"
+  const [page, setPage] = useState("home"); // "home" | "canto" | "about" | "privacy" | "lista"
   const [selectedCanto, setSelectedCanto] = useState(null);
   const [cantoFull, setCantoFull] = useState(null);
   const [loadingCanto, setLoadingCanto] = useState(false);
+  const [listaSlug, setListaSlug] = useState(null);
+
+  useEffect(() => {
+    const path = window.location.pathname || "";
+    const match = path.match(/^\/lista\/([^/]+)/);
+    if (match && match[1]) {
+      setListaSlug(match[1]);
+      setPage("lista");
+    }
+  }, []);
 
   const handleNavigate = useCallback((dest) => {
     setPage(dest);
@@ -1598,6 +1847,8 @@ export default function App() {
           <AboutPage />
         ) : page === "privacy" ? (
           <PrivacyPage />
+        ) : page === "lista" && listaSlug ? (
+          <ListaPage slug={listaSlug} />
         ) : (
           <HomePage onSelectCanto={handleSelectCanto} />
         )}
