@@ -1344,7 +1344,7 @@ function HomePage({ onSelectCanto }) {
 // LISTA PAGE
 // ============================================================
 
-function ListaPage({ slug }) {
+function ListaPage({ slug, onSelectCanto }) {
   const [loading, setLoading] = useState(true);
   const [lista, setLista] = useState(null);
   const [canti, setCanti] = useState([]);
@@ -1511,12 +1511,14 @@ function ListaPage({ slug }) {
           {canti.map((canto, index) => (
             <div
               key={canto.id}
-              className="card"
+              className="card fade-in"
+              onClick={() => onSelectCanto && onSelectCanto(canto)}
               style={{
                 padding: "14px 16px",
                 display: "flex",
                 alignItems: "flex-start",
                 gap: 12,
+                cursor: "pointer",
               }}
             >
               <div
@@ -1848,7 +1850,7 @@ export default function App() {
         ) : page === "privacy" ? (
           <PrivacyPage />
         ) : page === "lista" && listaSlug ? (
-          <ListaPage slug={listaSlug} />
+          <ListaPage slug={listaSlug} onSelectCanto={handleSelectCanto} />
         ) : (
           <HomePage onSelectCanto={handleSelectCanto} />
         )}
