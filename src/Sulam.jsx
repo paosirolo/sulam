@@ -1362,7 +1362,7 @@ function ListaPage({ slug }) {
       try {
         const { data, error: listaError } = await supabase
           .from("liste")
-          .select("id, slug, titolo, sottotitolo, canti_ids")
+          .select("*")
           .eq("slug", slug);
 
         if (listaError) throw listaError;
