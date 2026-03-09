@@ -520,7 +520,14 @@ function FilterPanel({ filters, setFilters, canti, isDrawer, onClose }) {
     ].sort(),
     [canti]
   );
-  const momenti = useMemo(() => [...new Set(canti.map(c => c.Momento_Messa).filter(Boolean))].sort(), [canti]);
+  const momenti = useMemo(
+    () => [
+      ...new Set(
+        canti.flatMap((c) => splitTags(c.Momento_Messa)).filter(Boolean)
+      ),
+    ].sort(),
+    [canti]
+  );
   const generi = useMemo(
     () => [
       ...new Set(
@@ -647,7 +654,9 @@ function CantoCard({ canto, onClick, index }) {
         {splitTags(canto.Tempo_Liturgico).map((t) => (
           <Badge key={t} label={t} />
         ))}
-        {canto.Momento_Messa && <Badge label={canto.Momento_Messa} />}
+        {splitTags(canto.Momento_Messa).map((m) => (
+          <Badge key={m} label={m} />
+        ))}
         {splitTags(canto.Genere).map((g) => (
           <Badge key={g} label={g} />
         ))}
@@ -962,7 +971,9 @@ function CantoViewer({ canto, onBack }) {
         {splitTags(canto.Tempo_Liturgico).map((t) => (
           <Badge key={t} label={t} />
         ))}
-        {canto.Momento_Messa && <Badge label={canto.Momento_Messa} />}
+        {splitTags(canto.Momento_Messa).map((m) => (
+          <Badge key={m} label={m} />
+        ))}
         {splitTags(canto.Genere).map((g) => (
           <Badge key={g} label={g} />
         ))}
@@ -1201,7 +1212,7 @@ function HomePage({ onSelectCanto }) {
   const filtered = useMemo(() => {
     return allCanti.filter(c => {
       if (filters.tempo && !splitTags(c.Tempo_Liturgico).includes(filters.tempo)) return false;
-      if (filters.momento && c.Momento_Messa !== filters.momento) return false;
+      if (filters.momento && !splitTags(c.Momento_Messa).includes(filters.momento)) return false;
       if (filters.genere) {
         const generiCanto = splitTags(c.Genere);
         if (!generiCanto.includes(filters.genere)) return false;
@@ -1565,7 +1576,9 @@ function ListaPage({ slug, onSelectCanto }) {
                   {splitTags(canto.Tempo_Liturgico).map((t) => (
                     <Badge key={t} label={t} />
                   ))}
-                  {canto.Momento_Messa && <Badge label={canto.Momento_Messa} />}
+                  {splitTags(canto.Momento_Messa).map((m) => (
+                    <Badge key={m} label={m} />
+                  ))}
                 </div>
               </div>
             </div>
