@@ -1097,19 +1097,6 @@ function CantoViewer({ canto, onBack }) {
             </button>
           </>
         )}
-
-        {/* Divider */}
-        <div style={{ width: 1, height: 28, background: "var(--sky-100)" }} />
-
-        {/* Copy link */}
-        <button
-          className="btn btn-secondary"
-          onClick={handleCopyLink}
-          style={{ gap: 6 }}
-        >
-          <Icons.ExternalLink />
-          {copied ? "Copiato!" : "Copia link"}
-        </button>
       </div>
 
       {/* Song content */}
@@ -1174,6 +1161,18 @@ function CantoViewer({ canto, onBack }) {
         ) : (
           <p style={{ color: "var(--gray-400)" }}>Testo non disponibile.</p>
         )}
+      </div>
+
+      {/* Share link */}
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 20 }}>
+        <button
+          className="btn btn-secondary"
+          onClick={handleCopyLink}
+          style={{ gap: 6 }}
+        >
+          <Icons.ExternalLink />
+          {copied ? "Copiato!" : "Condiviso!"}
+        </button>
       </div>
 
       {/* Segnalazione */}
@@ -1885,6 +1884,13 @@ export default function App() {
     setPage(dest);
     if (dest !== "canto") { setSelectedCanto(null); setCantoFull(null); }
     window.scrollTo(0, 0);
+    if (dest === "home") {
+      try {
+        window.history.pushState({}, "", "/");
+      } catch {
+        // ignore history errors
+      }
+    }
   }, []);
 
   const handleSelectCanto = useCallback(async (canto) => {
