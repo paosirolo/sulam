@@ -904,6 +904,7 @@ function CantoViewer({ canto, onBack }) {
     () => /\[[^\]]+\]/.test(canto.Content || ""),
     [canto.Content]
   );
+  const [copied, setCopied] = useState(false);
   const contentRef = useRef(null);
   const scrollIntervalRef = useRef(null);
 
@@ -945,6 +946,33 @@ function CantoViewer({ canto, onBack }) {
   const openLink = () => {
     if (canto.link_ascolto) window.open(canto.link_ascolto, "_blank");
   };
+
+  const handleCopyLink = useCallback(() => {
+    try {
+      const origin = window.location.origin || "";
+      const url = `${origin}/canto/${canto.id}`;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        });
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = url;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
+    } catch {
+      // ignore copy errors
+    }
+  }, [canto.id]);
 
   return (
     <div style={{ maxWidth: 720, margin: "0 auto", padding: "20px 16px 100px" }} className="fade-in">
@@ -1069,6 +1097,19 @@ function CantoViewer({ canto, onBack }) {
             </button>
           </>
         )}
+
+        {/* Divider */}
+        <div style={{ width: 1, height: 28, background: "var(--sky-100)" }} />
+
+        {/* Copy link */}
+        <button
+          className="btn btn-secondary"
+          onClick={handleCopyLink}
+          style={{ gap: 6 }}
+        >
+          <Icons.ExternalLink />
+          {copied ? "Copiato!" : "Copia link"}
+        </button>
       </div>
 
       {/* Song content */}
@@ -1797,10 +1838,46 @@ export default function App() {
 
   useEffect(() => {
     const path = window.location.pathname || "";
-    const match = path.match(/^\/lista\/([^/]+)/);
-    if (match && match[1]) {
-      setListaSlug(match[1]);
+    const listaMatch = path.match(/^\/lista\/([^/]+)/);
+    const cantoMatch = path.match(/^\/canto\/(\d+)/);
+
+    if (listaMatch && listaMatch[1]) {
+      setListaSlug(listaMatch[1]);
       setPage("lista");
+      return;
+    }
+
+    if (cantoMatch && cantoMatch[1]) {
+      const id = parseInt(cantoMatch[1], 10);
+      if (!Number.isFinite(id)) return;
+
+      let cancelled = false;
+      const load = async () => {
+        setLoadingCanto(true);
+        try {
+          const { data } = await supabase
+            .from("sulam_canti")
+            .select("*")
+            .eq("id", id);
+          if (cancelled) return;
+          if (data && data.length > 0) {
+            setCantoFull(data[0]);
+            setSelectedCanto(data[0]);
+            setPage("canto");
+          } else {
+            setCantoFull(null);
+          }
+        } catch {
+          if (!cancelled) setCantoFull(null);
+        } finally {
+          if (!cancelled) setLoadingCanto(false);
+        }
+      };
+
+      load();
+      return () => {
+        cancelled = true;
+      };
     }
   }, []);
 
@@ -1815,6 +1892,11 @@ export default function App() {
     setPage("canto");
     setLoadingCanto(true);
     window.scrollTo(0, 0);
+    try {
+      window.history.pushState({}, "", `/canto/${canto.id}`);
+    } catch {
+      // ignore history errors
+    }
 
     try {
       const { data } = await supabase
@@ -1838,6 +1920,11 @@ export default function App() {
     setSelectedCanto(null);
     setCantoFull(null);
     window.scrollTo(0, 0);
+    try {
+      window.history.pushState({}, "", `/`);
+    } catch {
+      // ignore history errors
+    }
   }, []);
 
   return (
