@@ -1171,7 +1171,7 @@ function CantoViewer({ canto, onBack }) {
           style={{ gap: 6 }}
         >
           <Icons.ExternalLink />
-          {copied ? "Copiato!" : "Condiviso!"}
+          {copied ? "Link copiato!" : "Condividi"}
         </button>
       </div>
 
