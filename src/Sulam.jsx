@@ -1849,7 +1849,7 @@ function InstallPage() {
           </h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
             {[
-              { t: "Uso offline", d: "I canti restano disponibili anche senza connessione (utile in chiesa o in sala prove)." },
+              { t: "Uso offline", d: "I canti restano disponibili anche senza connessione." },
               { t: "Icona in Home", d: "Avvio rapido come una vera app, senza cercare il sito nel browser." },
               { t: "Esperienza “app”", d: "Schermo intero, più fluida e comoda da usare durante la liturgia." },
             ].map(({ t, d }) => (
@@ -1872,7 +1872,7 @@ function InstallPage() {
               "Scorri e seleziona “Aggiungi a schermata Home”.",
               "Conferma il nome (es. “Sulàm”) e tocca “Aggiungi”.",
             ]}
-            note="Screenshot “a parole”: nella barra in basso di Safari, l’icona Condividi è al centro. Dopo il tap, appare un menu a lista; cerca “Aggiungi a schermata Home” con l’icona “+” su un quadrato."
+            note="Nella barra in basso di Safari, l’icona Condividi è al centro. Dopo il tap, appare un menu a lista; cerca “Aggiungi a schermata Home” con l’icona “+” su un quadrato."
           />
 
           <Card
@@ -1884,7 +1884,7 @@ function InstallPage() {
               "Seleziona “Installa app” oppure “Aggiungi a schermata Home”.",
               "Conferma “Installa”.",
             ]}
-            note="Screenshot “a parole”: nel menu ⋮ di Chrome compare una voce con icona di download o un segno “+”. Se vedi “Installa app”, è l’opzione migliore."
+            note="Nel menu ⋮ di Chrome compare una voce con icona di download o un segno “+”. Se vedi “Installa app”, è l’opzione migliore."
           />
 
           <Card
