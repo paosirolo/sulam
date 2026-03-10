@@ -503,6 +503,9 @@ function Header({ onMenuToggle, showBack, onBack, onNavigate }) {
         <button className="btn btn-ghost" onClick={() => onNavigate("about")} style={{ fontSize: "0.8rem", padding: "8px 12px" }}>
           cos'è
         </button>
+        <button className="btn btn-ghost" onClick={() => onNavigate("install")} style={{ fontSize: "0.8rem", padding: "8px 12px" }}>
+          installa
+        </button>
       </nav>
     </header>
   );
@@ -1734,6 +1737,174 @@ function AboutPage() {
 }
 
 // ============================================================
+// INSTALL PAGE (PWA)
+// ============================================================
+function InstallPage() {
+  const Card = ({ title, icon, steps, note }) => (
+    <div
+      className="card"
+      style={{
+        padding: "18px 20px",
+        border: "1px solid var(--sky-100)",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+        <div
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: "12px",
+            background: "var(--sky-100)",
+            color: "var(--sky-700)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontWeight: 800,
+          }}
+        >
+          {icon}
+        </div>
+        <h2 style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: "1rem", color: "var(--sky-700)" }}>
+          {title}
+        </h2>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, lineHeight: 1.75, color: "var(--gray-700)", fontSize: "0.95rem" }}>
+        {steps.map((s, idx) => (
+          <div key={idx} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+            <div
+              style={{
+                width: 22,
+                height: 22,
+                borderRadius: 999,
+                background: "var(--sky-500)",
+                color: "white",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "0.78rem",
+                fontWeight: 800,
+                flexShrink: 0,
+                marginTop: 2,
+              }}
+            >
+              {idx + 1}
+            </div>
+            <p style={{ margin: 0 }}>{s}</p>
+          </div>
+        ))}
+      </div>
+
+      {note ? (
+        <div style={{ marginTop: 14, background: "var(--sky-50)", border: "1px solid var(--sky-100)", borderRadius: "var(--radius-sm)", padding: "12px 14px" }}>
+          <p style={{ margin: 0, color: "var(--gray-600)", fontSize: "0.9rem" }}>{note}</p>
+        </div>
+      ) : null}
+    </div>
+  );
+
+  return (
+    <div style={{ maxWidth: 820, margin: "0 auto", padding: "36px 20px 80px" }} className="fade-in">
+      <div
+        style={{
+          background: "white",
+          borderRadius: "var(--radius)",
+          padding: "32px 36px",
+          boxShadow: "var(--shadow-sm)",
+          border: "1px solid var(--sky-100)",
+        }}
+      >
+        {/* Hero */}
+        <div style={{ textAlign: "center", marginBottom: 28 }}>
+          <div
+            style={{
+              width: 72,
+              height: 72,
+              borderRadius: 20,
+              margin: "0 auto 14px",
+              background: "linear-gradient(135deg, var(--sky-500), var(--sky-700))",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "white",
+              fontSize: "1.6rem",
+              fontWeight: 900,
+              boxShadow: "var(--shadow)",
+            }}
+          >
+            ⬇️
+          </div>
+          <h1 style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 900, fontSize: "1.7rem", color: "var(--sky-700)", marginBottom: 6 }}>
+            installa l'app
+          </h1>
+          <p style={{ color: "var(--gray-500)", fontSize: "0.95rem", lineHeight: 1.7 }}>
+            Sulàm può essere installata come app (PWA): avrai un’icona sulla schermata Home e potrai usarla anche offline.
+          </p>
+        </div>
+
+        {/* Benefits */}
+        <div style={{ marginBottom: 26 }}>
+          <h2 style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: "1.05rem", color: "var(--sky-700)", marginBottom: 10 }}>
+            Perché installarla?
+          </h2>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+            {[
+              { t: "Uso offline", d: "I canti restano disponibili anche senza connessione (utile in chiesa o in sala prove)." },
+              { t: "Icona in Home", d: "Avvio rapido come una vera app, senza cercare il sito nel browser." },
+              { t: "Esperienza “app”", d: "Schermo intero, più fluida e comoda da usare durante la liturgia." },
+            ].map(({ t, d }) => (
+              <div key={t} style={{ background: "var(--sky-50)", border: "1px solid var(--sky-100)", borderRadius: "var(--radius-sm)", padding: "14px 16px" }}>
+                <p style={{ margin: "0 0 6px", fontWeight: 800, color: "var(--sky-800)" }}>{t}</p>
+                <p style={{ margin: 0, color: "var(--gray-600)", lineHeight: 1.7, fontSize: "0.92rem" }}>{d}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Instructions */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <Card
+            title="iPhone / iPad (Safari)"
+            icon=""
+            steps={[
+              "Apri Sulàm in Safari.",
+              "Tocca il pulsante Condividi (quadrato con freccia verso l’alto) in basso nella barra.",
+              "Scorri e seleziona “Aggiungi a schermata Home”.",
+              "Conferma il nome (es. “Sulàm”) e tocca “Aggiungi”.",
+            ]}
+            note="Screenshot “a parole”: nella barra in basso di Safari, l’icona Condividi è al centro. Dopo il tap, appare un menu a lista; cerca “Aggiungi a schermata Home” con l’icona “+” su un quadrato."
+          />
+
+          <Card
+            title="Android (Chrome)"
+            icon="🤖"
+            steps={[
+              "Apri Sulàm in Chrome.",
+              "Tocca il menu ⋮ in alto a destra.",
+              "Seleziona “Installa app” oppure “Aggiungi a schermata Home”.",
+              "Conferma “Installa”.",
+            ]}
+            note="Screenshot “a parole”: nel menu ⋮ di Chrome compare una voce con icona di download o un segno “+”. Se vedi “Installa app”, è l’opzione migliore."
+          />
+
+          <Card
+            title="Android (Firefox / Samsung Internet / altri)"
+            icon="🌐"
+            steps={[
+              "Apri Sulàm nel browser che usi.",
+              "Apri il menu del browser (⋮ o ☰).",
+              "Cerca “Aggiungi a schermata Home” o “Installa”.",
+              "Conferma l’aggiunta/installa e avvia Sulàm dall’icona in Home.",
+            ]}
+            note="Se non trovi l’opzione “Installa”, prova con Chrome: alcuni browser mostrano solo “Aggiungi a schermata Home” oppure non supportano l’installazione completa su tutti i dispositivi."
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
 // PRIVACY PAGE
 // ============================================================
 function PrivacyPage() {
@@ -1823,13 +1994,22 @@ function Footer({ onNavigate }) {
       <p style={{ fontSize: "0.75rem", color: "var(--gray-400)", fontFamily: "'Montserrat', sans-serif" }}>
         © {year} sulàm
       </p>
-      <button
-        className="btn btn-ghost"
-        onClick={() => onNavigate("privacy")}
-        style={{ fontSize: "0.75rem", padding: "6px 10px", color: "var(--gray-400)" }}
-      >
-        privacy
-      </button>
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <button
+          className="btn btn-ghost"
+          onClick={() => onNavigate("install")}
+          style={{ fontSize: "0.75rem", padding: "6px 10px", color: "var(--gray-400)" }}
+        >
+          installa
+        </button>
+        <button
+          className="btn btn-ghost"
+          onClick={() => onNavigate("privacy")}
+          style={{ fontSize: "0.75rem", padding: "6px 10px", color: "var(--gray-400)" }}
+        >
+          privacy
+        </button>
+      </div>
     </footer>
   );
 }
@@ -1838,7 +2018,7 @@ function Footer({ onNavigate }) {
 // MAIN APP
 // ============================================================
 export default function App() {
-  const [page, setPage] = useState("home"); // "home" | "canto" | "about" | "privacy" | "lista"
+  const [page, setPage] = useState("home"); // "home" | "canto" | "about" | "install" | "privacy" | "lista"
   const [selectedCanto, setSelectedCanto] = useState(null);
   const [cantoFull, setCantoFull] = useState(null);
   const [loadingCanto, setLoadingCanto] = useState(false);
@@ -1962,6 +2142,8 @@ export default function App() {
           )
         ) : page === "about" ? (
           <AboutPage />
+        ) : page === "install" ? (
+          <InstallPage />
         ) : page === "privacy" ? (
           <PrivacyPage />
         ) : page === "lista" && listaSlug ? (
