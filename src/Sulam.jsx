@@ -989,24 +989,33 @@ function CantoViewer({ canto, onBack }) {
           lineHeight: 1.2,
         }}>{canto.Title}</h1>
 
-        {canto.Autori && (
+        {(canto.Autori || canto.Album || canto.Anno) && (
           <p style={{ color: "var(--sky-600)", fontWeight: 600, marginBottom: 12, fontSize: "0.9rem" }}>
-            {canto.Autori} {canto.Anno && <span style={{ color: "var(--gray-400)", fontWeight: 400 }}>· {canto.Anno}</span>}
+            {canto.Autori && <span>{canto.Autori}</span>}
+            {canto.Album && (
+              <span style={{ color: "var(--gray-500)", fontWeight: 500 }}>
+                {" \u2014 "}{canto.Album}
+              </span>
+            )}
+            {canto.Anno && (
+              <span style={{ color: "var(--gray-400)", fontWeight: 400 }}>
+                {" · "}{canto.Anno}
+              </span>
+            )}
           </p>
         )}
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-        {splitTags(canto.Tempo_Liturgico).map((t) => (
-          <Badge key={t} label={t} />
-        ))}
-        {splitTags(canto.Momento_Messa).map((m) => (
-          <Badge key={m} label={m} />
-        ))}
-        {splitTags(canto.Genere).map((g) => (
-          <Badge key={g} label={g} />
-        ))}
-        {canto.Album && <Badge label={`📀 ${canto.Album}`} />}
-      </div>
+          {splitTags(canto.Tempo_Liturgico).map((t) => (
+            <Badge key={t} label={t} />
+          ))}
+          {splitTags(canto.Momento_Messa).map((m) => (
+            <Badge key={m} label={m} />
+          ))}
+          {splitTags(canto.Genere).map((g) => (
+            <Badge key={g} label={g} />
+          ))}
+        </div>
       </div>
 
       {/* Toolbar */}
