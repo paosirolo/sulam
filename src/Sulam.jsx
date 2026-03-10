@@ -823,6 +823,7 @@ function parseChordPro(text) {
 }
 
 function ChordProLine({ line, showChords, transpose, fontSize, isChorus }) {
+  if (!line || line.trim() === "") return <div style={{ height: "1.9em" }} />;
   const chordRegex = /\[([^\]]+)\]/g;
 
   let hasChord = false;
