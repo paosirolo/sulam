@@ -902,7 +902,8 @@ function ChordProLine({ line, showChords, transpose, fontSize, isChorus }) {
 function CantoViewer({ canto, onBack }) {
   const [fontSize, setFontSize] = useState(16);
   const [isScrolling, setIsScrolling] = useState(false);
-  const [scrollSpeed, setScrollSpeed] = useState(30);
+  const [scrollVelocity, setScrollVelocity] = useState(5);
+  const scrollSpeed = Math.round(200 / scrollVelocity);
   const [showSegnalazione, setShowSegnalazione] = useState(false);
   const [viewIncremented, setViewIncremented] = useState(false);
   const [showChords, setShowChords] = useState(false);
@@ -944,7 +945,7 @@ function CantoViewer({ canto, onBack }) {
       }, scrollSpeed);
     }
     return () => clearInterval(scrollIntervalRef.current);
-  }, [scrollSpeed]);
+  }, [scrollVelocity]);
 
   useEffect(() => {
     return () => clearInterval(scrollIntervalRef.current);
@@ -1060,11 +1061,11 @@ function CantoViewer({ canto, onBack }) {
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: "0.72rem", color: "var(--gray-400)" }}>Velocità</span>
             <input
-              type="range" min="10" max="80" step="5"
-              value={scrollSpeed}
-              onChange={e => setScrollSpeed(Number(e.target.value))}
+              type="range" min="1" max="10" step="1"
+              value={scrollVelocity}
+              onChange={e => setScrollVelocity(Number(e.target.value))}
               style={{ width: 80, accentColor: "var(--sky-500)" }}
-            />
+            />  
           </div>
         )}
 
