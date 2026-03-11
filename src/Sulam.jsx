@@ -826,9 +826,14 @@ function ChordProLine({ line, showChords, transpose, fontSize, isChorus }) {
   if (!line || line.trim() === "") return <div style={{ height: "1.9em" }} />;
 
   const chordRegex = /\[([^\]]+)\]/g;
+  const clean = line.replace(/\[[^\]]+\]/g, "");
+  const chordSize = Math.max(fontSize - 2, 11);
 
-  if (!showChords) {
-    const clean = line.replace(/\[[^\]]+\]/g, "");
+  // Controlla se ci sono accordi
+  const hasChord = chordRegex.test(line);
+  chordRegex.lastIndex = 0; // reset dopo test()
+
+  if (!showChords || !hasChord) {
     return (
       <pre className="song-content" style={{
         fontSize: `${fontSize}px`,
@@ -843,10 +848,8 @@ function ChordProLine({ line, showChords, transpose, fontSize, isChorus }) {
   const segments = [];
   let lastIndex = 0;
   let match;
-  let hasChord = false;
 
   while ((match = chordRegex.exec(line)) !== null) {
-    hasChord = true;
     const textBefore = line.slice(lastIndex, match.index);
     const rawChord = match[1];
     const transposed = transpose ? transposeChord(rawChord, transpose) : rawChord;
@@ -856,57 +859,61 @@ function ChordProLine({ line, showChords, transpose, fontSize, isChorus }) {
 
   const tail = line.slice(lastIndex);
 
-  if (!hasChord) {
-    return (
-      <pre className="song-content" style={{
-        fontSize: `${fontSize}px`,
-        fontWeight: isChorus ? 700 : 400,
-        color: isChorus ? "var(--sky-700)" : "var(--gray-700)",
-        marginBottom: 0,
-      }}>{line}</pre>
-    );
-  }
-
-  const chordSize = Math.max(fontSize - 2, 11);
-
   return (
     <div style={{
+      display: "flex",
+      flexWrap: "wrap",
+      alignItems: "flex-end",
       fontFamily: "'JetBrains Mono', 'Courier New', monospace",
       fontSize: `${fontSize}px`,
-      fontWeight: isChorus ? 700 : 400,
+      marginBottom: 0,
       lineHeight: 1.9,
-      whiteSpace: "pre-wrap",
-      wordBreak: "break-word",
-      // Spazio extra in cima per gli accordi
-      paddingTop: `${chordSize * 1.4}px`,
-      position: "relative",
     }}>
       {segments.map(({ chord, text }, i) => (
-        <span key={i} style={{ position: "relative", display: "inline" }}>
-          {/* Accordo posizionato sopra la sillaba */}
+        <span key={i} style={{
+          display: "inline-flex",
+          flexDirection: "column",
+          alignItems: "flex-start",
+          whiteSpace: "pre",
+        }}>
+          {/* Accordo */}
           <span style={{
-            position: "absolute",
-            bottom: "100%",
-            left: 0,
             fontSize: `${chordSize}px`,
             fontWeight: 700,
             color: "var(--sky-600)",
             lineHeight: 1.3,
             whiteSpace: "nowrap",
-            pointerEvents: "none",
+            // Padding orizzontale minimo per leggibilità
+            paddingRight: "2px",
           }}>{chord}</span>
-          {/* Testo della sillaba */}
+          {/* Testo */}
           <span style={{
+            fontWeight: isChorus ? 700 : 400,
             color: isChorus ? "var(--sky-700)" : "var(--gray-700)",
-          }}>{text || ""}</span>
+            whiteSpace: "pre",
+          }}>{text || " "}</span>
         </span>
       ))}
-      {/* Testo finale senza accordo */}
-      {tail && (
+      {/* Testo finale senza accordo sopra */}
+      {tail ? (
         <span style={{
-          color: isChorus ? "var(--sky-700)" : "var(--gray-700)",
-        }}>{tail}</span>
-      )}
+          display: "inline-flex",
+          flexDirection: "column",
+          alignItems: "flex-start",
+          whiteSpace: "pre",
+        }}>
+          <span style={{
+            fontSize: `${chordSize}px`,
+            lineHeight: 1.3,
+            visibility: "hidden",
+          }}>{"‌"}</span>
+          <span style={{
+            fontWeight: isChorus ? 700 : 400,
+            color: isChorus ? "var(--sky-700)" : "var(--gray-700)",
+            whiteSpace: "pre",
+          }}>{tail}</span>
+        </span>
+      ) : null}
     </div>
   );
 }
