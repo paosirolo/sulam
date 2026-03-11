@@ -868,7 +868,7 @@ function ChordProLine({ line, showChords, transpose, fontSize, isChorus }) {
       fontSize: `${fontSize}px`,
       fontWeight: isChorus ? 700 : 400,
       color: isChorus ? "var(--sky-700)" : "var(--gray-700)",
-      lineHeight: 1.9,
+      lineHeight: `${fontSize * 1.9 + chordHeightPx}px`,
       paddingTop: `${chordHeightPx}px`,
       whiteSpace: "pre-wrap",
       wordBreak: "break-word",
