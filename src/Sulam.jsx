@@ -839,12 +839,14 @@ function ChordProLine({ line, showChords, transpose, fontSize, isChorus }) {
     );
   }
 
-  // Costruisce segmenti: ogni segmento = { chord, text }
+  // Costruisce segmenti { chord, text }
   const segments = [];
   let lastIndex = 0;
   let match;
+  let hasChord = false;
 
   while ((match = chordRegex.exec(line)) !== null) {
+    hasChord = true;
     const textBefore = line.slice(lastIndex, match.index);
     const rawChord = match[1];
     const transposed = transpose ? transposeChord(rawChord, transpose) : rawChord;
@@ -854,7 +856,7 @@ function ChordProLine({ line, showChords, transpose, fontSize, isChorus }) {
 
   const tail = line.slice(lastIndex);
 
-  if (segments.length === 0) {
+  if (!hasChord) {
     return (
       <pre className="song-content" style={{
         fontSize: `${fontSize}px`,
@@ -865,46 +867,46 @@ function ChordProLine({ line, showChords, transpose, fontSize, isChorus }) {
     );
   }
 
+  const chordSize = Math.max(fontSize - 2, 11);
+
   return (
     <div style={{
       fontFamily: "'JetBrains Mono', 'Courier New', monospace",
       fontSize: `${fontSize}px`,
+      fontWeight: isChorus ? 700 : 400,
+      lineHeight: 1.9,
       whiteSpace: "pre-wrap",
       wordBreak: "break-word",
-      marginBottom: 0,
+      // Spazio extra in cima per gli accordi
+      paddingTop: `${chordSize * 1.4}px`,
+      position: "relative",
     }}>
       {segments.map(({ chord, text }, i) => (
-        <span key={i} style={{ display: "inline-block", verticalAlign: "bottom" }}>
+        <span key={i} style={{ position: "relative", display: "inline" }}>
+          {/* Accordo posizionato sopra la sillaba */}
           <span style={{
-            display: "block",
-            fontSize: `${Math.max(fontSize - 2, 11)}px`,
+            position: "absolute",
+            bottom: "100%",
+            left: 0,
+            fontSize: `${chordSize}px`,
             fontWeight: 700,
             color: "var(--sky-600)",
             lineHeight: 1.3,
+            whiteSpace: "nowrap",
+            pointerEvents: "none",
           }}>{chord}</span>
+          {/* Testo della sillaba */}
           <span style={{
-            display: "block",
-            fontWeight: isChorus ? 700 : 400,
             color: isChorus ? "var(--sky-700)" : "var(--gray-700)",
-            lineHeight: 1.9,
-          }}>{text || "\u00A0"}</span>
+          }}>{text || ""}</span>
         </span>
       ))}
-      {tail ? (
-        <span style={{ display: "inline-block", verticalAlign: "bottom" }}>
-          <span style={{
-            display: "block",
-            lineHeight: 1.3,
-            minHeight: `${Math.max(fontSize - 2, 11) * 1.3}px`,
-          }}>{" "}</span>
-          <span style={{
-            display: "block",
-            fontWeight: isChorus ? 700 : 400,
-            color: isChorus ? "var(--sky-700)" : "var(--gray-700)",
-            lineHeight: 1.9,
-          }}>{tail}</span>
-        </span>
-      ) : null}
+      {/* Testo finale senza accordo */}
+      {tail && (
+        <span style={{
+          color: isChorus ? "var(--sky-700)" : "var(--gray-700)",
+        }}>{tail}</span>
+      )}
     </div>
   );
 }
