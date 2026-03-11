@@ -824,73 +824,88 @@ function parseChordPro(text) {
 
 function ChordProLine({ line, showChords, transpose, fontSize, isChorus }) {
   if (!line || line.trim() === "") return <div style={{ height: "1.9em" }} />;
+
   const chordRegex = /\[([^\]]+)\]/g;
 
-  let hasChord = false;
-  let chordLine = "";
-  let lyricLine = "";
+  if (!showChords) {
+    const clean = line.replace(/\[[^\]]+\]/g, "");
+    return (
+      <pre className="song-content" style={{
+        fontSize: `${fontSize}px`,
+        fontWeight: isChorus ? 700 : 400,
+        color: isChorus ? "var(--sky-700)" : "var(--gray-700)",
+        marginBottom: 0,
+      }}>{clean}</pre>
+    );
+  }
+
+  // Costruisce segmenti: ogni segmento = { chord, text }
+  const segments = [];
   let lastIndex = 0;
-
   let match;
-  while ((match = chordRegex.exec(line)) !== null) {
-    hasChord = true;
-    const textSegment = line.slice(lastIndex, match.index);
-    lyricLine += textSegment;
-    chordLine += " ".repeat(textSegment.length);
 
+  while ((match = chordRegex.exec(line)) !== null) {
+    const textBefore = line.slice(lastIndex, match.index);
     const rawChord = match[1];
     const transposed = transpose ? transposeChord(rawChord, transpose) : rawChord;
-    chordLine += transposed;
-
+    segments.push({ chord: transposed, text: textBefore });
     lastIndex = match.index + match[0].length;
   }
 
   const tail = line.slice(lastIndex);
-  lyricLine += tail;
-  chordLine += " ".repeat(tail.length);
 
-  if (!showChords || !hasChord) {
-    const clean = line.replace(/\[[^\]]+\]/g, "");
+  if (segments.length === 0) {
     return (
-      <pre
-        className="song-content"
-        style={{
-          fontSize: `${fontSize}px`,
-          fontWeight: isChorus ? 700 : 400,
-          color: isChorus ? "var(--sky-700)" : "var(--gray-700)",
-          marginBottom: 0,
-        }}
-      >
-        {clean}
-      </pre>
+      <pre className="song-content" style={{
+        fontSize: `${fontSize}px`,
+        fontWeight: isChorus ? 700 : 400,
+        color: isChorus ? "var(--sky-700)" : "var(--gray-700)",
+        marginBottom: 0,
+      }}>{line}</pre>
     );
   }
 
   return (
-    <>
-      <pre
-        className="song-content"
-        style={{
-          fontSize: `${Math.max(fontSize - 2, 11)}px`,
-          fontWeight: 700,
-          color: "var(--sky-700)",
-          marginBottom: 0,
-        }}
-      >
-        {chordLine}
-      </pre>
-      <pre
-        className="song-content"
-        style={{
-          fontSize: `${fontSize}px`,
-          fontWeight: isChorus ? 700 : 400,
-          color: isChorus ? "var(--sky-700)" : "var(--gray-700)",
-          marginBottom: 0,
-        }}
-      >
-        {lyricLine}
-      </pre>
-    </>
+    <div style={{
+      fontFamily: "'JetBrains Mono', 'Courier New', monospace",
+      fontSize: `${fontSize}px`,
+      whiteSpace: "pre-wrap",
+      wordBreak: "break-word",
+      marginBottom: 0,
+    }}>
+      {segments.map(({ chord, text }, i) => (
+        <span key={i} style={{ display: "inline-block", verticalAlign: "bottom" }}>
+          <span style={{
+            display: "block",
+            fontSize: `${Math.max(fontSize - 2, 11)}px`,
+            fontWeight: 700,
+            color: "var(--sky-600)",
+            lineHeight: 1.3,
+          }}>{chord}</span>
+          <span style={{
+            display: "block",
+            fontWeight: isChorus ? 700 : 400,
+            color: isChorus ? "var(--sky-700)" : "var(--gray-700)",
+            lineHeight: 1.9,
+          }}>{text || "\u00A0"}</span>
+        </span>
+      ))}
+      {tail ? (
+        <span style={{ display: "inline-block", verticalAlign: "bottom" }}>
+          <span style={{
+            display: "block",
+            lineHeight: 1.3,
+            minHeight: `${Math.max(fontSize - 2, 11) * 1.3}px`,
+          }}>{" "}</span>
+          <span style={{
+            display: "block",
+            fontWeight: isChorus ? 700 : 400,
+            color: isChorus ? "var(--sky-700)" : "var(--gray-700)",
+            lineHeight: 1.9,
+          }}>{tail}</span>
+        </span>
+      ) : null}
+    </div>
   );
 }
 // ============================================================
