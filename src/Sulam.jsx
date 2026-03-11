@@ -826,14 +826,10 @@ function ChordProLine({ line, showChords, transpose, fontSize, isChorus }) {
   if (!line || line.trim() === "") return <div style={{ height: "1.9em" }} />;
 
   const chordRegex = /\[([^\]]+)\]/g;
-  const clean = line.replace(/\[[^\]]+\]/g, "");
-  const chordSize = Math.max(fontSize - 2, 11);
-
-  // Controlla se ci sono accordi
-  const hasChord = chordRegex.test(line);
-  chordRegex.lastIndex = 0; // reset dopo test()
+  const hasChord = /\[[^\]]+\]/.test(line);
 
   if (!showChords || !hasChord) {
+    const clean = line.replace(/\[[^\]]+\]/g, "");
     return (
       <pre className="song-content" style={{
         fontSize: `${fontSize}px`,
@@ -844,76 +840,59 @@ function ChordProLine({ line, showChords, transpose, fontSize, isChorus }) {
     );
   }
 
-  // Costruisce segmenti { chord, text }
-  const segments = [];
+  const chordSize = Math.max(fontSize - 2, 11);
+  const chordHeightPx = chordSize * 1.4;
+
+  // Costruisce array di parti: { chord | null, text }
+  const parts = [];
   let lastIndex = 0;
   let match;
+  chordRegex.lastIndex = 0;
 
   while ((match = chordRegex.exec(line)) !== null) {
     const textBefore = line.slice(lastIndex, match.index);
+    if (textBefore) parts.push({ chord: null, text: textBefore });
     const rawChord = match[1];
     const transposed = transpose ? transposeChord(rawChord, transpose) : rawChord;
-    segments.push({ chord: transposed, text: textBefore });
+    parts.push({ chord: transposed, text: "" });
     lastIndex = match.index + match[0].length;
   }
 
   const tail = line.slice(lastIndex);
+  if (tail) parts.push({ chord: null, text: tail });
 
   return (
     <div style={{
-      display: "flex",
-      flexWrap: "wrap",
-      alignItems: "flex-end",
+      position: "relative",
       fontFamily: "'JetBrains Mono', 'Courier New', monospace",
       fontSize: `${fontSize}px`,
-      marginBottom: 0,
+      fontWeight: isChorus ? 700 : 400,
+      color: isChorus ? "var(--sky-700)" : "var(--gray-700)",
       lineHeight: 1.9,
+      paddingTop: `${chordHeightPx}px`,
+      whiteSpace: "pre-wrap",
+      wordBreak: "break-word",
     }}>
-      {segments.map(({ chord, text }, i) => (
-        <span key={i} style={{
-          display: "inline-flex",
-          flexDirection: "column",
-          alignItems: "flex-start",
-          whiteSpace: "pre",
-        }}>
-          {/* Accordo */}
-          <span style={{
-            fontSize: `${chordSize}px`,
-            fontWeight: 700,
-            color: "var(--sky-600)",
-            lineHeight: 1.3,
-            whiteSpace: "nowrap",
-            // Padding orizzontale minimo per leggibilità
-            paddingRight: "2px",
-          }}>{chord}</span>
-          {/* Testo */}
-          <span style={{
-            fontWeight: isChorus ? 700 : 400,
-            color: isChorus ? "var(--sky-700)" : "var(--gray-700)",
-            whiteSpace: "pre",
-          }}>{text || " "}</span>
-        </span>
-      ))}
-      {/* Testo finale senza accordo sopra */}
-      {tail ? (
-        <span style={{
-          display: "inline-flex",
-          flexDirection: "column",
-          alignItems: "flex-start",
-          whiteSpace: "pre",
-        }}>
-          <span style={{
-            fontSize: `${chordSize}px`,
-            lineHeight: 1.3,
-            visibility: "hidden",
-          }}>{"‌"}</span>
-          <span style={{
-            fontWeight: isChorus ? 700 : 400,
-            color: isChorus ? "var(--sky-700)" : "var(--gray-700)",
-            whiteSpace: "pre",
-          }}>{tail}</span>
-        </span>
-      ) : null}
+      {parts.map((part, i) =>
+        part.chord ? (
+          <span key={i} style={{ position: "relative", display: "inline" }}>
+            <span style={{
+              position: "absolute",
+              bottom: "100%",
+              left: 0,
+              fontSize: `${chordSize}px`,
+              fontWeight: 700,
+              color: "var(--sky-600)",
+              lineHeight: `${chordHeightPx}px`,
+              whiteSpace: "nowrap",
+              pointerEvents: "none",
+              userSelect: "none",
+            }}>{part.chord}</span>
+          </span>
+        ) : (
+          <span key={i}>{part.text}</span>
+        )
+      )}
     </div>
   );
 }
