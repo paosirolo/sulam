@@ -856,7 +856,9 @@ function ChordProLine({ line, showChords, transpose, fontSize, isChorus }) {
     const transposed = transpose ? transposeChord(rawChord, transpose) : rawChord;
     lastIndex = match.index + match[0].length;
     if (transposed === "|") continue;
-    parts.push({ chord: transposed, text: "\u00A0\u00A0" });
+    // Spazio riservato = lunghezza accordo + 1 spazio, così gli accordi vicini non si sovrappongono
+    const reservedSpace = "\u00A0".repeat(transposed.length + 1);
+    parts.push({ chord: transposed, text: reservedSpace });
   }
 
   const tail = line.slice(lastIndex);
@@ -2116,7 +2118,7 @@ export default function App() {
       setCantoFull(canto);
     }
     setLoadingCanto(false);
-  }, []);
+  }, [page]);
 
   const handleBack = useCallback(() => {
     setSelectedCanto(null);
