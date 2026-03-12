@@ -856,7 +856,7 @@ function ChordProLine({ line, showChords, transpose, fontSize, isChorus }) {
     }
     const raw = match[1];
     const transposed = transpose ? transposeChord(raw, transpose) : raw;
-    if (transposed !== "|") tokens.push({ type: "chord", value: transposed });
+    tokens.push({ type: "chord", value: transposed });
     lastIndex = match.index + match[0].length;
   }
   if (lastIndex < line.length) {
@@ -911,7 +911,7 @@ function ChordProLine({ line, showChords, transpose, fontSize, isChorus }) {
               minWidth: seg.text.trim() === ""
                 ? `${(seg.chord.length + 1) * chordSize * 0.62}px`
                 : undefined,
-            }}>{seg.text || ""}</span>
+            }}>{seg.text || " "}</span>
           </span>
         ) : (
           <span key={idx} style={{
@@ -2160,7 +2160,7 @@ export default function App() {
       setCantoFull(canto);
     }
     setLoadingCanto(false);
-  }, []);
+  }, [page]);
 
   const handleBack = useCallback(() => {
     setSelectedCanto(null);
@@ -2182,7 +2182,7 @@ export default function App() {
   return (
     <>
       <GlobalStyle />
-      <div style={{ minHeight: "100vh", background: "var(--sky-50)" }}>
+      <div style={{ minHeight: "100vh", background: "var(--sky-50)", paddingBottom: "64px" }}>
         <Header
           showBack={page === "canto"}
           onBack={handleBack}
