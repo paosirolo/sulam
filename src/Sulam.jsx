@@ -2021,9 +2021,216 @@ function PrivacyPage() {
 }
 
 // ============================================================
+// RICHIESTA NUOVO CANTO MODAL
+// ============================================================
+function RichiestaCantoModal({ onClose }) {
+  const [form, setForm] = useState({
+    Title: "",
+    Content: "",
+    Autori: "",
+    Album: "",
+    Anno: "",
+    link_ascolto: "",
+    email_utente: "",
+    note: "",
+  });
+  const [stato, setStato] = useState("idle"); // idle | sending | success | error
+
+  const set = (key, val) => setForm(f => ({ ...f, [key]: val }));
+
+  const handleSubmit = async () => {
+    if (!form.Title.trim()) return;
+    setStato("sending");
+    try {
+      const payload = {
+        titolo: form.Title.trim(),
+        testo: form.Content.trim() || null,
+        autori: form.Autori.trim() || null,
+        album: form.Album.trim() || null,
+        anno: form.Anno ? parseInt(form.Anno, 10) || null : null,
+        link_ascolto: form.link_ascolto.trim() || null,
+        email_utente: form.email_utente.trim() || null,
+        note: form.note.trim() || null,
+      };
+      const { error } = await supabase.from("richieste_canti").insert(payload);
+      setStato(error ? "error" : "success");
+    } catch {
+      setStato("error");
+    }
+  };
+
+  const inputStyle = {
+    width: "100%",
+    padding: "10px 14px",
+    border: "1.5px solid var(--sky-200)",
+    borderRadius: "var(--radius-sm)",
+    fontFamily: "'Montserrat', sans-serif",
+    fontSize: "0.88rem",
+    background: "white",
+    color: "var(--gray-800)",
+    outline: "none",
+    transition: "border-color 0.2s",
+    boxSizing: "border-box",
+  };
+
+  const labelStyle = {
+    display: "block",
+    fontSize: "0.75rem",
+    fontWeight: 700,
+    color: "var(--sky-700)",
+    marginBottom: 5,
+    textTransform: "uppercase",
+    letterSpacing: "0.05em",
+  };
+
+  return (
+    <>
+      <div className="overlay" onClick={onClose} />
+      <div style={{
+        position: "fixed",
+        left: "50%",
+        top: "50%",
+        transform: "translate(-50%, -50%)",
+        background: "white",
+        borderRadius: "var(--radius)",
+        padding: "28px 28px 24px",
+        width: "min(560px, calc(100vw - 24px))",
+        maxHeight: "85vh",
+        overflowY: "auto",
+        zIndex: 102,
+        boxShadow: "var(--shadow-lg)",
+        animation: "fadeIn 0.25s ease",
+      }}>
+        {/* Header */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
+          <div>
+            <h3 style={{ fontWeight: 800, fontSize: "1.1rem", color: "var(--gray-800)", marginBottom: 3 }}>
+              Richiedi un canto
+            </h3>
+            <p style={{ fontSize: "0.78rem", color: "var(--gray-400)" }}>
+              Solo il titolo è obbligatorio. Gli altri campi sono facoltativi.
+            </p>
+          </div>
+          <button className="btn btn-ghost" onClick={onClose} style={{ padding: 8, borderRadius: "50%", flexShrink: 0 }}>
+            <Icons.Close />
+          </button>
+        </div>
+
+        {stato === "success" ? (
+          <div style={{ textAlign: "center", padding: "24px 0" }}>
+            <div style={{
+              width: 60, height: 60, borderRadius: "50%",
+              background: "var(--sky-100)", margin: "0 auto 16px",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "var(--sky-500)",
+            }}>
+              <Icons.Check />
+            </div>
+            <p style={{ fontWeight: 700, color: "var(--gray-800)", fontSize: "1rem" }}>Richiesta inviata!</p>
+            <p style={{ fontSize: "0.82rem", color: "var(--gray-400)", marginTop: 6, lineHeight: 1.6 }}>
+              Grazie per il tuo contributo.<br />Valuteremo l'inserimento del canto il prima possibile.
+            </p>
+            <button className="btn btn-primary" onClick={onClose} style={{ marginTop: 20 }}>Chiudi</button>
+          </div>
+        ) : (
+          <>
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              {/* Titolo */}
+              <div>
+                <label style={labelStyle}>Titolo del canto *</label>
+                <input
+                  style={inputStyle}
+                  value={form.Title}
+                  onChange={e => set("Title", e.target.value)}
+                  placeholder="Es. Laudato Si'"
+                />
+              </div>
+
+              {/* Autori + Anno */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10 }}>
+                <div>
+                  <label style={labelStyle}>Autori</label>
+                  <input style={inputStyle} value={form.Autori} onChange={e => set("Autori", e.target.value)} placeholder="Es. San Francesco d'Assisi" />
+                </div>
+                <div>
+                  <label style={labelStyle}>Anno</label>
+                  <input style={{ ...inputStyle, width: 90 }} type="number" value={form.Anno} onChange={e => set("Anno", e.target.value)} placeholder="2024" min="1900" max="2099" />
+                </div>
+              </div>
+
+              {/* Album */}
+              <div>
+                <label style={labelStyle}>Album / Raccolta</label>
+                <input style={inputStyle} value={form.Album} onChange={e => set("Album", e.target.value)} placeholder="Es. Cantico delle Creature" />
+              </div>
+
+              {/* Link Youtube */}
+              <div>
+                <label style={labelStyle}>Link YouTube</label>
+                <input style={inputStyle} type="url" value={form.link_ascolto} onChange={e => set("link_ascolto", e.target.value)} placeholder="https://youtube.com/..." />
+              </div>
+
+              {/* Testo */}
+              <div>
+                <label style={labelStyle}>Testo del canto</label>
+                <textarea
+                  style={{ ...inputStyle, resize: "vertical", lineHeight: 1.7 }}
+                  value={form.Content}
+                  onChange={e => set("Content", e.target.value)}
+                  placeholder="Incolla qui il testo del canto (opzionale)..."
+                  rows={5}
+                />
+              </div>
+
+              {/* Divider */}
+              <hr style={{ border: "none", borderTop: "1px solid var(--sky-100)", margin: "2px 0" }} />
+
+              {/* Email + Note */}
+              <div>
+                <label style={labelStyle}>Tua email (opzionale)</label>
+                <input style={inputStyle} type="email" value={form.email_utente} onChange={e => set("email_utente", e.target.value)} placeholder="per ricevere aggiornamenti sull'inserimento" />
+              </div>
+
+              <div>
+                <label style={labelStyle}>Note aggiuntive</label>
+                <textarea
+                  style={{ ...inputStyle, resize: "vertical" }}
+                  value={form.note}
+                  onChange={e => set("note", e.target.value)}
+                  placeholder="Altre informazioni utili..."
+                  rows={2}
+                />
+              </div>
+            </div>
+
+            {stato === "error" && (
+              <p style={{ color: "#EF4444", fontSize: "0.8rem", marginTop: 12 }}>
+                Errore nell'invio. Riprova.
+              </p>
+            )}
+
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 20 }}>
+              <button className="btn btn-ghost" onClick={onClose}>Annulla</button>
+              <button
+                className="btn btn-primary"
+                onClick={handleSubmit}
+                disabled={stato === "sending" || !form.Title.trim()}
+                style={{ opacity: (stato === "sending" || !form.Title.trim()) ? 0.6 : 1 }}
+              >
+                {stato === "sending" ? "Invio..." : "Invia richiesta"}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </>
+  );
+}
+
+// ============================================================
 // FOOTER
 // ============================================================
-function Footer({ onNavigate }) {
+function Footer({ onNavigate, onRichiesta }) {
   const year = new Date().getFullYear();
   return (
     <footer style={{
@@ -2045,6 +2252,13 @@ function Footer({ onNavigate }) {
         © {year} sulàm
       </p>
       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <button
+          className="btn btn-ghost"
+          onClick={onRichiesta}
+          style={{ fontSize: "0.75rem", padding: "6px 10px", color: "var(--sky-600)", fontWeight: 700 }}
+        >
+          ✦ richiedi un canto
+        </button>
         <button
           className="btn btn-ghost"
           onClick={() => onNavigate("install")}
@@ -2074,6 +2288,7 @@ export default function App() {
   const [loadingCanto, setLoadingCanto] = useState(false);
   const [listaSlug, setListaSlug] = useState(null);
   const [previousPage, setPreviousPage] = useState("home");
+  const [showRichiesta, setShowRichiesta] = useState(false);
 
   useEffect(() => {
     const path = window.location.pathname || "";
@@ -2208,7 +2423,8 @@ export default function App() {
         ) : (
           <HomePage onSelectCanto={handleSelectCanto} />
         )}
-        <Footer onNavigate={handleNavigate} />
+        {showRichiesta && <RichiestaCantoModal onClose={() => setShowRichiesta(false)} />}
+        <Footer onNavigate={handleNavigate} onRichiesta={() => setShowRichiesta(true)} />
       </div>
     </>
   );
