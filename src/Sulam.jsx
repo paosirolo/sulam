@@ -2142,7 +2142,7 @@ function RichiestaCantoModal({ onClose }) {
                   style={inputStyle}
                   value={form.Title}
                   onChange={e => set("Title", e.target.value)}
-                  placeholder="Es. Laudato Si'"
+                  placeholder="Es. Anima Christi"
                 />
               </div>
 
@@ -2150,24 +2150,24 @@ function RichiestaCantoModal({ onClose }) {
               <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10 }}>
                 <div>
                   <label style={labelStyle}>Autori</label>
-                  <input style={inputStyle} value={form.Autori} onChange={e => set("Autori", e.target.value)} placeholder="Es. San Francesco d'Assisi" />
+                  <input style={inputStyle} value={form.Autori} onChange={e => set("Autori", e.target.value)} placeholder="Es. Marco Frisina" />
                 </div>
                 <div>
                   <label style={labelStyle}>Anno</label>
-                  <input style={{ ...inputStyle, width: 90 }} type="number" value={form.Anno} onChange={e => set("Anno", e.target.value)} placeholder="2024" min="1900" max="2099" />
+                  <input style={{ ...inputStyle, width: 90 }} type="number" value={form.Anno} onChange={e => set("Anno", e.target.value)} placeholder="2000" min="1900" max="2099" />
                 </div>
               </div>
 
               {/* Album */}
               <div>
                 <label style={labelStyle}>Album / Raccolta</label>
-                <input style={inputStyle} value={form.Album} onChange={e => set("Album", e.target.value)} placeholder="Es. Cantico delle Creature" />
+                <input style={inputStyle} value={form.Album} onChange={e => set("Album", e.target.value)} placeholder="Es. Pane di Vita nuova" />
               </div>
 
               {/* Link Youtube */}
               <div>
                 <label style={labelStyle}>Link YouTube</label>
-                <input style={inputStyle} type="url" value={form.link_ascolto} onChange={e => set("link_ascolto", e.target.value)} placeholder="https://youtube.com/..." />
+                <input style={inputStyle} type="url" value={form.link_ascolto} onChange={e => set("link_ascolto", e.target.value)} placeholder="https://www.youtube.com/..." />
               </div>
 
               {/* Testo */}
