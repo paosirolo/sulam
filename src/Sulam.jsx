@@ -854,8 +854,9 @@ function ChordProLine({ line, showChords, transpose, fontSize, isChorus }) {
     if (textBefore) parts.push({ chord: null, text: textBefore });
     const rawChord = match[1];
     const transposed = transpose ? transposeChord(rawChord, transpose) : rawChord;
-    parts.push({ chord: transposed, text: "" });
     lastIndex = match.index + match[0].length;
+    if (transposed === "|") continue;
+    parts.push({ chord: transposed, text: "\u00A0\u00A0" });
   }
 
   const tail = line.slice(lastIndex);
@@ -2028,6 +2029,7 @@ export default function App() {
   const [cantoFull, setCantoFull] = useState(null);
   const [loadingCanto, setLoadingCanto] = useState(false);
   const [listaSlug, setListaSlug] = useState(null);
+  const [previousPage, setPreviousPage] = useState("home");
 
   useEffect(() => {
     const path = window.location.pathname || "";
@@ -2089,6 +2091,7 @@ export default function App() {
 
   const handleSelectCanto = useCallback(async (canto) => {
     setSelectedCanto(canto);
+    setPreviousPage(page);
     setPage("canto");
     setLoadingCanto(true);
     window.scrollTo(0, 0);
@@ -2116,16 +2119,21 @@ export default function App() {
   }, []);
 
   const handleBack = useCallback(() => {
-    setPage("home");
     setSelectedCanto(null);
     setCantoFull(null);
     window.scrollTo(0, 0);
-    try {
-      window.history.pushState({}, "", `/`);
-    } catch {
-      // ignore history errors
+    if (previousPage === "lista" && listaSlug) {
+      setPage("lista");
+      try {
+        window.history.pushState({}, "", `/lista/${listaSlug}`);
+      } catch {}
+    } else {
+      setPage("home");
+      try {
+        window.history.pushState({}, "", `/`);
+      } catch {}
     }
-  }, []);
+  }, [previousPage, listaSlug]);
 
   return (
     <>
