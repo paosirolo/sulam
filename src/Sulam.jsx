@@ -841,59 +841,96 @@ function ChordProLine({ line, showChords, transpose, fontSize, isChorus }) {
   }
 
   const chordSize = Math.max(fontSize - 2, 11);
-  const chordHeightPx = chordSize * 1.4;
+  const chordHeightPx = chordSize * 1.5;
+  const textColor = isChorus ? "var(--sky-700)" : "var(--gray-700)";
+  const fontWeight = isChorus ? 700 : 400;
 
-  // Costruisce array di parti: { chord | null, text }
-  const parts = [];
+  // Tokenizza la riga in una lista flat di token: { type: "chord"|"text", value }
+  const tokens = [];
   let lastIndex = 0;
   let match;
   chordRegex.lastIndex = 0;
-
   while ((match = chordRegex.exec(line)) !== null) {
-    const textBefore = line.slice(lastIndex, match.index);
-    if (textBefore) parts.push({ chord: null, text: textBefore });
-    const rawChord = match[1];
-    const transposed = transpose ? transposeChord(rawChord, transpose) : rawChord;
+    if (match.index > lastIndex) {
+      tokens.push({ type: "text", value: line.slice(lastIndex, match.index) });
+    }
+    const raw = match[1];
+    const transposed = transpose ? transposeChord(raw, transpose) : raw;
+    if (transposed !== "|") tokens.push({ type: "chord", value: transposed });
     lastIndex = match.index + match[0].length;
-    if (transposed === "|") continue;
-    // Spazio riservato = lunghezza accordo + 1 spazio, così gli accordi vicini non si sovrappongono
-    const reservedSpace = "\u00A0".repeat(transposed.length + 1);
-    parts.push({ chord: transposed, text: reservedSpace });
+  }
+  if (lastIndex < line.length) {
+    tokens.push({ type: "text", value: line.slice(lastIndex) });
   }
 
-  const tail = line.slice(lastIndex);
-  if (tail) parts.push({ chord: null, text: tail });
+  // Raggruppa in segmenti colonna: ogni accordo prende il testo immediatamente successivo
+  const segments = [];
+  let i = 0;
+  while (i < tokens.length) {
+    if (tokens[i].type === "chord") {
+      const chord = tokens[i].value;
+      const text = (i + 1 < tokens.length && tokens[i + 1].type === "text") ? tokens[i + 1].value : "";
+      segments.push({ chord, text });
+      i += text ? 2 : 1;
+    } else {
+      segments.push({ chord: null, text: tokens[i].value });
+      i++;
+    }
+  }
 
   return (
     <div style={{
-      position: "relative",
+      display: "flex",
+      flexWrap: "wrap",
+      alignItems: "flex-end",
       fontFamily: "'JetBrains Mono', 'Courier New', monospace",
       fontSize: `${fontSize}px`,
-      fontWeight: isChorus ? 700 : 400,
-      color: isChorus ? "var(--sky-700)" : "var(--gray-700)",
-      lineHeight: `${fontSize * 1.9 + chordHeightPx}px`,
-      paddingTop: `${chordHeightPx}px`,
-      whiteSpace: "pre-wrap",
-      wordBreak: "break-word",
+      marginBottom: 0,
     }}>
-      {parts.map((part, i) =>
-        part.chord ? (
-          <span key={i} style={{ position: "relative", display: "inline" }}>
+      {segments.map((seg, idx) =>
+        seg.chord ? (
+          <span key={idx} style={{
+            display: "inline-flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+            whiteSpace: "pre",
+          }}>
             <span style={{
-              position: "absolute",
-              bottom: "100%",
-              left: 0,
               fontSize: `${chordSize}px`,
               fontWeight: 700,
               color: "var(--sky-600)",
               lineHeight: `${chordHeightPx}px`,
               whiteSpace: "nowrap",
-              pointerEvents: "none",
-              userSelect: "none",
-            }}>{part.chord}</span>
+              paddingRight: "4px",
+            }}>{seg.chord}</span>
+            <span style={{
+              fontWeight,
+              color: textColor,
+              lineHeight: `${fontSize * 1.7}px`,
+              whiteSpace: "pre",
+              minWidth: seg.text.trim() === ""
+                ? `${(seg.chord.length + 1) * chordSize * 0.62}px`
+                : undefined,
+            }}>{seg.text || ""}</span>
           </span>
         ) : (
-          <span key={i}>{part.text}</span>
+          <span key={idx} style={{
+            display: "inline-flex",
+            flexDirection: "column",
+            whiteSpace: "pre",
+          }}>
+            <span style={{
+              lineHeight: `${chordHeightPx}px`,
+              visibility: "hidden",
+              fontSize: `${chordSize}px`,
+            }}>{"\u200B"}</span>
+            <span style={{
+              fontWeight,
+              color: textColor,
+              lineHeight: `${fontSize * 1.7}px`,
+              whiteSpace: "pre",
+            }}>{seg.text}</span>
+          </span>
         )
       )}
     </div>
@@ -1998,6 +2035,11 @@ function Footer({ onNavigate }) {
       justifyContent: "space-between",
       flexWrap: "wrap",
       gap: 8,
+      position: "fixed",
+      bottom: 0,
+      left: 0,
+      right: 0,
+      zIndex: 100,
     }}>
       <p style={{ fontSize: "0.75rem", color: "var(--gray-400)", fontFamily: "'Montserrat', sans-serif" }}>
         © {year} sulàm
@@ -2118,7 +2160,7 @@ export default function App() {
       setCantoFull(canto);
     }
     setLoadingCanto(false);
-  }, [page]);
+  }, []);
 
   const handleBack = useCallback(() => {
     setSelectedCanto(null);
