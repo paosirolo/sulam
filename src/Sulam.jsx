@@ -2230,28 +2230,31 @@ function RichiestaCantoModal({ onClose }) {
 // ============================================================
 // FOOTER
 // ============================================================
-function Footer({ onNavigate, onRichiesta }) {
+function Footer({ onNavigate, onRichiesta, isSticky }) {
   const year = new Date().getFullYear();
   return (
     <footer style={{
       borderTop: "1px solid var(--sky-100)",
       background: "white",
-      padding: "20px 24px",
+      padding: "16px 24px",
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
       flexWrap: "wrap",
       gap: 8,
-      position: "fixed",
-      bottom: 0,
-      left: 0,
-      right: 0,
-      zIndex: 100,
+      ...(isSticky ? {
+        position: "fixed",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 100,
+      } : {
+        position: "static",
+        marginTop: 32,
+      }),
     }}>
-      <p style={{ fontSize: "0.75rem", color: "var(--gray-400)", fontFamily: "'Montserrat', sans-serif" }}>
-        © {year} sulàm
-      </p>
-      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+      {/* Bottoni — su mobile vanno prima, su desktop a destra */}
+      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
         <button
           className="btn btn-ghost"
           onClick={onRichiesta}
@@ -2274,6 +2277,17 @@ function Footer({ onNavigate, onRichiesta }) {
           privacy
         </button>
       </div>
+
+      {/* Copyright — su mobile finisce in fondo grazie a order */}
+      <p style={{
+        fontSize: "0.75rem",
+        color: "var(--gray-400)",
+        fontFamily: "'Montserrat', sans-serif",
+        width: "100%",         // occupa tutta la larghezza su mobile → va a capo sotto
+        textAlign: "right",
+      }}>
+        © {year} sulàm
+      </p>
     </footer>
   );
 }
@@ -2397,7 +2411,7 @@ export default function App() {
   return (
     <>
       <GlobalStyle />
-      <div style={{ minHeight: "100vh", background: "var(--sky-50)", paddingBottom: "64px" }}>
+      <div style={{ minHeight: "100vh", background: "var(--sky-50)", paddingBottom: page === "home" ? "64px" : "0" }}>
         <Header
           showBack={page === "canto"}
           onBack={handleBack}
@@ -2424,7 +2438,7 @@ export default function App() {
           <HomePage onSelectCanto={handleSelectCanto} />
         )}
         {showRichiesta && <RichiestaCantoModal onClose={() => setShowRichiesta(false)} />}
-        <Footer onNavigate={handleNavigate} onRichiesta={() => setShowRichiesta(true)} />
+        <Footer onNavigate={handleNavigate} onRichiesta={() => setShowRichiesta(true)} isSticky={page === "home"} />
       </div>
     </>
   );
