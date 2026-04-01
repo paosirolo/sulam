@@ -822,6 +822,26 @@ function parseChordPro(text) {
   return sections;
 }
 
+function parseInlineMarkdown(text) {
+  const parts = [];
+  const regex = /_([^_]+)_/g;
+  let last = 0;
+  let match;
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > last) {
+      parts.push({ italic: false, value: text.slice(last, match.index) });
+    }
+    parts.push({ italic: true, value: match[1] });
+    last = match.index + match[0].length;
+  }
+  if (last < text.length) {
+    parts.push({ italic: false, value: text.slice(last) });
+  }
+  return parts;
+}
+
+
+
 function ChordProLine({ line, showChords, transpose, fontSize, isChorus }) {
   if (!line || line.trim() === "") return <div style={{ height: "1.9em" }} />;
 
@@ -830,13 +850,20 @@ function ChordProLine({ line, showChords, transpose, fontSize, isChorus }) {
 
   if (!showChords || !hasChord) {
     const clean = line.replace(/\[[^\]]+\]/g, "");
+    const parts = parseInlineMarkdown(clean);
     return (
       <pre className="song-content" style={{
         fontSize: `${fontSize}px`,
         fontWeight: isChorus ? 700 : 400,
         color: isChorus ? "var(--sky-700)" : "var(--gray-700)",
         marginBottom: 0,
-      }}>{clean}</pre>
+      }}>
+        {parts.map((p, i) =>
+          p.italic
+            ? <em key={i} style={{ fontStyle: "italic" }}>{p.value}</em>
+            : p.value
+        )}
+      </pre>
     );
   }
 
