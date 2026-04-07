@@ -1285,11 +1285,9 @@ function CantoViewer({ canto, onBack }) {
 // ============================================================
 const PAGE_SIZE = 20;
 
-function HomePage({ onSelectCanto }) {
+function HomePage({ onSelectCanto, search, setSearch, filters, setFilters }) {
   const [allCanti, setAllCanti] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [filters, setFilters] = useState({});
   const [displayCount, setDisplayCount] = useState(PAGE_SIZE);
   const [showDrawer, setShowDrawer] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -2330,6 +2328,8 @@ export default function App() {
   const [listaSlug, setListaSlug] = useState(null);
   const [previousPage, setPreviousPage] = useState("home");
   const [showRichiesta, setShowRichiesta] = useState(false);
+  const [homeSearch, setHomeSearch] = useState("");
+  const [homeFilters, setHomeFilters] = useState({});
 
   useEffect(() => {
     const path = window.location.pathname || "";
@@ -2462,7 +2462,13 @@ export default function App() {
         ) : page === "lista" && listaSlug ? (
           <ListaPage slug={listaSlug} onSelectCanto={handleSelectCanto} />
         ) : (
-          <HomePage onSelectCanto={handleSelectCanto} />
+          <HomePage
+          onSelectCanto={handleSelectCanto}
+          search={homeSearch}
+          setSearch={setHomeSearch}
+          filters={homeFilters}
+          setFilters={setHomeFilters}
+        />
         )}
         {showRichiesta && <RichiestaCantoModal onClose={() => setShowRichiesta(false)} />}
         <Footer onNavigate={handleNavigate} onRichiesta={() => setShowRichiesta(true)} isSticky={page === "home"} />
