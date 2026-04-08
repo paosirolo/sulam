@@ -4,8 +4,8 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 // CONFIGURAZIONE SUPABASE
 // Sostituisci con le tue credenziali da supabase.com > Settings > API
 // ============================================================
-const SUPABASE_URL = "https://woqwxnaqwgdfchlhrzpz.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndvcXd4bmFxd2dkZmNobGhyenB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3MDQwODEsImV4cCI6MjA4ODI4MDA4MX0.rmRrq-j-L0QChhDgCt1Ou9bxfXAIlpKHNUlNqeSWVUY";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // ============================================================
 // SUPABASE CLIENT (minimal, no dependency needed)
