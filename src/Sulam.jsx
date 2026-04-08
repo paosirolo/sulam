@@ -128,6 +128,14 @@ function splitTags(value) {
     .filter(Boolean);
 }
 
+function sanitizeInput(value, maxLength = 2000) {
+  if (typeof value !== "string") return "";
+  return value
+    .trim()
+    .slice(0, maxLength)
+    .replace(/[<>]/g, ""); // rimuove < e > che potrebbero formare tag HTML
+}
+
 // ============================================================
 // CHORD / CHORDPRO UTILITIES
 // ============================================================
@@ -705,8 +713,8 @@ function SegnalazioneModal({ canto, onClose }) {
       const { error } = await supabase.from("segnalazioni").insert({
         canto_id: canto.id,
         canto_titolo: canto.Title,
-        messaggio: messaggio.trim(),
-        email_utente: email.trim() || null,
+        messaggio: sanitizeInput(messaggio, 2000),
+        email_utente: sanitizeInput(email, 200) || null,
       });
       setStato(error ? "error" : "success");
     } catch {
@@ -1019,34 +1027,26 @@ function CantoViewer({ canto, onBack }) {
   }, []);
 
   const openLink = () => {
-    if (canto.link_ascolto) window.open(canto.link_ascolto, "_blank");
+    if (!canto.link_ascolto) return;
+    try {
+      const url = new URL(canto.link_ascolto);
+      if (url.protocol === "https:" || url.protocol === "http:") {
+        window.open(url.href, "_blank", "noopener,noreferrer");
+      }
+    } catch {
+      // URL non valido, non fare nulla
+    }
   };
 
   const handleCopyLink = useCallback(() => {
-    try {
-      const origin = window.location.origin || "";
-      const url = `${origin}/canto/${canto.id}`;
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(url).then(() => {
-          setCopied(true);
-          setTimeout(() => setCopied(false), 2000);
-        });
-      } else {
-        const textarea = document.createElement("textarea");
-        textarea.value = url;
-        textarea.style.position = "fixed";
-        textarea.style.opacity = "0";
-        document.body.appendChild(textarea);
-        textarea.focus();
-        textarea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textarea);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      }
-    } catch {
-      // ignore copy errors
-    }
+    const origin = window.location.origin || "";
+    const url = `${origin}/canto/${canto.id}`;
+    navigator.clipboard?.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }).catch(() => {
+      // fallback silenzioso
+    });
   }, [canto.id]);
 
   return (
@@ -2068,14 +2068,14 @@ function RichiestaCantoModal({ onClose }) {
     setStato("sending");
     try {
       const payload = {
-        titolo: form.Title.trim(),
-        testo: form.Content.trim() || null,
-        autori: form.Autori.trim() || null,
-        album: form.Album.trim() || null,
+        titolo: sanitizeInput(form.Title, 300),
+        testo: sanitizeInput(form.Content, 10000) || null,
+        autori: sanitizeInput(form.Autori, 300) || null,
+        album: sanitizeInput(form.Album, 300) || null,
         anno: form.Anno ? parseInt(form.Anno, 10) || null : null,
-        link_ascolto: form.link_ascolto.trim() || null,
-        email_utente: form.email_utente.trim() || null,
-        note: form.note.trim() || null,
+        link_ascolto: sanitizeInput(form.link_ascolto, 500) || null,
+        email_utente: sanitizeInput(form.email_utente, 200) || null,
+        note: sanitizeInput(form.note, 1000) || null,
       };
       const { error } = await supabase.from("richieste_canti").insert(payload);
       setStato(error ? "error" : "success");
