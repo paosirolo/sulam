@@ -490,14 +490,6 @@ const GlobalStyle = () => (
 }
 
 .print-only { display: none; }
-  
-  @page {
-    margin: 2cm;
-    size: A4;
-  }
-}
-
-.print-only { display: none; }
   `}</style>
 );
 
