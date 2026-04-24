@@ -1113,7 +1113,7 @@ function CantoViewer({ canto, onBack }) {
   }, [canto.id]);
 
   return (
-    <div className="no-print fade-in" style={{ maxWidth: 720, margin: "0 auto", padding: "20px 16px 100px" }}>
+    <div className="fade-in" style={{ maxWidth: 720, margin: "0 auto", padding: "20px 16px 100px" }}>
       {/* Header info */}
       <div style={{
         background: "white", borderRadius: "var(--radius)",
