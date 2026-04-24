@@ -490,6 +490,14 @@ const GlobalStyle = () => (
 }
 
 .print-only { display: none; }
+  
+  @page {
+    margin: 2cm;
+    size: A4;
+  }
+}
+
+.print-only { display: none; }
   `}</style>
 );
 
@@ -958,63 +966,43 @@ function ChordProLine({ line, showChords, transpose, fontSize, isChorus }) {
       fontSize: `${fontSize}px`,
       marginBottom: 0,
     }}>
-      {segments.map((seg, idx) =>
-       seg.chord ? (
-        <span key={idx} style={{
-          display: "inline-flex",
-          flexDirection: "column",
-          alignItems: "flex-start",
-          whiteSpace: "pre",
-        }}>
-          <span style={{
-            fontSize: `${chordSize}px`,
-            fontWeight: 700,
-            color: "var(--sky-600)",
-            lineHeight: `${chordHeightPx}px`,
-            whiteSpace: "nowrap",
-            paddingRight: "4px",
-          }}>{seg.chord}</span>
-          <span style={{
-            fontWeight,
-            color: textColor,
-            lineHeight: `${fontSize * 1.7}px`,
-            whiteSpace: "pre",
-            minWidth: seg.text.trim() === ""
-              ? `${(seg.chord.length + 1) * chordSize * 0.62}px`
-              : undefined,
-          }}>
-            {parseInlineMarkdown(seg.text || " ").map((p, pi) =>
-              p.italic
-                ? <em key={pi} style={{ fontStyle: "italic" }}>{p.value}</em>
-                : p.value
-            )}
-          </span>
-        </span>
-      ) : (
-        <span key={idx} style={{
-          display: "inline-flex",
-          flexDirection: "column",
-          whiteSpace: "pre",
-        }}>
-          <span style={{
-            lineHeight: `${chordHeightPx}px`,
-            visibility: "hidden",
-            fontSize: `${chordSize}px`,
-          }}>{"\u200B"}</span>
-          <span style={{
-            fontWeight,
-            color: textColor,
-            lineHeight: `${fontSize * 1.7}px`,
-            whiteSpace: "pre",
-          }}>
-            {parseInlineMarkdown(seg.text || "").map((p, pi) =>
-              p.italic
-                ? <em key={pi} style={{ fontStyle: "italic" }}>{p.value}</em>
-                : p.value
-            )}
-          </span>
-        </span>
-      ) : (
+      {segments.map((seg, idx) => {
+        if (seg.chord) {
+          return (
+            <span key={idx} style={{
+              display: "inline-flex",
+              flexDirection: "column",
+              alignItems: "flex-start",
+              whiteSpace: "pre",
+            }}>
+              <span style={{
+                fontSize: `${chordSize}px`,
+                fontWeight: 700,
+                color: "var(--sky-600)",
+                lineHeight: `${chordHeightPx}px`,
+                whiteSpace: "nowrap",
+                paddingRight: "4px",
+              }}>{seg.chord}</span>
+              <span style={{
+                fontWeight,
+                color: textColor,
+                lineHeight: `${fontSize * 1.7}px`,
+                whiteSpace: "pre",
+                minWidth: seg.text.trim() === ""
+                  ? `${(seg.chord.length + 1) * chordSize * 0.62}px`
+                  : undefined,
+              }}>
+                {parseInlineMarkdown(seg.text || " ").map((p, pi) =>
+                  p.italic
+                    ? <em key={pi} style={{ fontStyle: "italic" }}>{p.value}</em>
+                    : p.value
+                )}
+              </span>
+            </span>
+          );
+        }
+
+        return (
           <span key={idx} style={{
             display: "inline-flex",
             flexDirection: "column",
@@ -1030,10 +1018,16 @@ function ChordProLine({ line, showChords, transpose, fontSize, isChorus }) {
               color: textColor,
               lineHeight: `${fontSize * 1.7}px`,
               whiteSpace: "pre",
-            }}>{seg.text}</span>
+            }}>
+              {parseInlineMarkdown(seg.text || "").map((p, pi) =>
+                p.italic
+                  ? <em key={pi} style={{ fontStyle: "italic" }}>{p.value}</em>
+                  : p.value
+              )}
+            </span>
           </span>
-        )
-      )}
+        );
+      })}
     </div>
   );
 }
@@ -1119,7 +1113,7 @@ function CantoViewer({ canto, onBack }) {
   }, [canto.id]);
 
   return (
-    <div className="no-print" style={{ maxWidth: 720, margin: "0 auto", padding: "20px 16px 100px" }} className="fade-in">
+    <div className="no-print fade-in" style={{ maxWidth: 720, margin: "0 auto", padding: "20px 16px 100px" }}>
       {/* Header info */}
       <div style={{
         background: "white", borderRadius: "var(--radius)",
