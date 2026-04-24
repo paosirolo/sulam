@@ -454,6 +454,28 @@ const GlobalStyle = () => (
       bottom: 16px;
       z-index: 10;
     }
+      @media print {
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  
+  header, footer, .floating-toolbar { display: none !important; }
+  
+  body { background: white !important; }
+  
+  .print-only { display: block !important; }
+  .no-print { display: none !important; }
+  
+  .song-content {
+    font-size: 13px !important;
+    line-height: 1.8 !important;
+  }
+  
+  @page {
+    margin: 2cm;
+    size: A4;
+  }
+}
+
+.print-only { display: none; }
   `}</style>
 );
 
@@ -988,6 +1010,9 @@ function CantoViewer({ canto, onBack }) {
     [canto.Content]
   );
   const [copied, setCopied] = useState(false);
+  const handlePrint = useCallback(() => {
+    window.print();
+  }, []);
   const contentRef = useRef(null);
   const scrollIntervalRef = useRef(null);
 
@@ -1094,7 +1119,7 @@ function CantoViewer({ canto, onBack }) {
       </div>
 
       {/* Toolbar */}
-      <div style={{
+      <div className="no-print" style={{
         background: "white", borderRadius: "var(--radius)",
         padding: "12px 16px", marginBottom: 20,
         boxShadow: "var(--shadow-sm)", border: "1px solid var(--sky-100)",
@@ -1194,6 +1219,14 @@ function CantoViewer({ canto, onBack }) {
         }}
         className={isScrolling ? "scrolling-active" : ""}
       >
+      {/* Visibile solo in stampa */}
+<div className="print-only" style={{ marginBottom: 24 }}>
+  <h1 style={{ fontSize: 22, fontWeight: 800, marginBottom: 6 }}>{canto.Title}</h1>
+  {canto.Autori && <p style={{ fontSize: 13, color: "#555", marginBottom: 2 }}><strong>Autori:</strong> {canto.Autori}</p>}
+  {canto.Album && <p style={{ fontSize: 13, color: "#555", marginBottom: 2 }}><strong>Album:</strong> {canto.Album}</p>}
+  {canto.Anno && <p style={{ fontSize: 13, color: "#555", marginBottom: 12 }}><strong>Anno:</strong> {canto.Anno}</p>}
+  <hr style={{ borderTop: "1px solid #ccc", marginBottom: 16 }} />
+</div>
         {canto.Content ? (
           parseChordPro(canto.Content).map((section, i) => (
             <div
@@ -1248,16 +1281,28 @@ function CantoViewer({ canto, onBack }) {
       </div>
 
       {/* Share link */}
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 20 }}>
-        <button
-          className="btn btn-secondary"
-          onClick={handleCopyLink}
-          style={{ gap: 6 }}
-        >
-          <Icons.ExternalLink />
-          {copied ? "Link copiato!" : "Condividi"}
-        </button>
-      </div>
+      <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginBottom: 20 }}>
+  <button
+    className="btn btn-secondary"
+    onClick={handlePrint}
+    style={{ gap: 6 }}
+  >
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <polyline points="6 9 6 2 18 2 18 9"/>
+      <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+      <rect x="6" y="14" width="12" height="8"/>
+    </svg>
+    Stampa
+  </button>
+  <button
+    className="btn btn-secondary"
+    onClick={handleCopyLink}
+    style={{ gap: 6 }}
+  >
+    <Icons.ExternalLink />
+    {copied ? "Link copiato!" : "Condividi"}
+  </button>
+</div>
 
       {/* Segnalazione */}
       <div style={{
