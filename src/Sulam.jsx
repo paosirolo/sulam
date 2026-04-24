@@ -454,20 +454,42 @@ const GlobalStyle = () => (
       bottom: 16px;
       z-index: 10;
     }
-      @media print {
+ @media print {
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   
-  header, footer, .floating-toolbar { display: none !important; }
-  
-  body { background: white !important; }
-  
-  .print-only { display: block !important; }
+  /* Nasconde tutta l'interfaccia */
+  header,
+  footer,
   .no-print { display: none !important; }
   
+  /* Sfondo bianco ovunque */
+  body, html {
+    background: white !important;
+  }
+  
+  /* Rimuove bordi, ombre, sfondi colorati dai card */
+  .card, div {
+    box-shadow: none !important;
+    border: none !important;
+    background: white !important;
+    border-radius: 0 !important;
+  }
+  
+  /* Testo del canto */
   .song-content {
     font-size: 13px !important;
     line-height: 1.8 !important;
+    color: black !important;
   }
+
+  /* Margini pagina */
+  @page {
+    margin: 2cm;
+    size: A4;
+  }
+}
+
+.print-only { display: none; }
   
   @page {
     margin: 2cm;
@@ -1075,7 +1097,7 @@ function CantoViewer({ canto, onBack }) {
   }, [canto.id]);
 
   return (
-    <div style={{ maxWidth: 720, margin: "0 auto", padding: "20px 16px 100px" }} className="fade-in">
+    <div className="no-print" style={{ maxWidth: 720, margin: "0 auto", padding: "20px 16px 100px" }} className="fade-in">
       {/* Header info */}
       <div style={{
         background: "white", borderRadius: "var(--radius)",
@@ -1281,7 +1303,7 @@ function CantoViewer({ canto, onBack }) {
       </div>
 
       {/* Share link */}
-      <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginBottom: 20 }}>
+      <div className="no-print" style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginBottom: 20 }}>
   <button
     className="btn btn-secondary"
     onClick={handlePrint}
@@ -1305,7 +1327,7 @@ function CantoViewer({ canto, onBack }) {
 </div>
 
       {/* Segnalazione */}
-      <div style={{
+      <div className="no-print" style={{
         background: "var(--sky-50)", borderRadius: "var(--radius)",
         padding: "16px 20px",
         border: "1px dashed var(--sky-200)",
