@@ -967,32 +967,62 @@ function ChordProLine({ line, showChords, transpose, fontSize, isChorus }) {
       marginBottom: 0,
     }}>
       {segments.map((seg, idx) =>
-        seg.chord ? (
-          <span key={idx} style={{
-            display: "inline-flex",
-            flexDirection: "column",
-            alignItems: "flex-start",
+       seg.chord ? (
+        <span key={idx} style={{
+          display: "inline-flex",
+          flexDirection: "column",
+          alignItems: "flex-start",
+          whiteSpace: "pre",
+        }}>
+          <span style={{
+            fontSize: `${chordSize}px`,
+            fontWeight: 700,
+            color: "var(--sky-600)",
+            lineHeight: `${chordHeightPx}px`,
+            whiteSpace: "nowrap",
+            paddingRight: "4px",
+          }}>{seg.chord}</span>
+          <span style={{
+            fontWeight,
+            color: textColor,
+            lineHeight: `${fontSize * 1.7}px`,
+            whiteSpace: "pre",
+            minWidth: seg.text.trim() === ""
+              ? `${(seg.chord.length + 1) * chordSize * 0.62}px`
+              : undefined,
+          }}>
+            {parseInlineMarkdown(seg.text || " ").map((p, pi) =>
+              p.italic
+                ? <em key={pi} style={{ fontStyle: "italic" }}>{p.value}</em>
+                : p.value
+            )}
+          </span>
+        </span>
+      ) : (
+        <span key={idx} style={{
+          display: "inline-flex",
+          flexDirection: "column",
+          whiteSpace: "pre",
+        }}>
+          <span style={{
+            lineHeight: `${chordHeightPx}px`,
+            visibility: "hidden",
+            fontSize: `${chordSize}px`,
+          }}>{"\u200B"}</span>
+          <span style={{
+            fontWeight,
+            color: textColor,
+            lineHeight: `${fontSize * 1.7}px`,
             whiteSpace: "pre",
           }}>
-            <span style={{
-              fontSize: `${chordSize}px`,
-              fontWeight: 700,
-              color: "var(--sky-600)",
-              lineHeight: `${chordHeightPx}px`,
-              whiteSpace: "nowrap",
-              paddingRight: "4px",
-            }}>{seg.chord}</span>
-            <span style={{
-              fontWeight,
-              color: textColor,
-              lineHeight: `${fontSize * 1.7}px`,
-              whiteSpace: "pre",
-              minWidth: seg.text.trim() === ""
-                ? `${(seg.chord.length + 1) * chordSize * 0.62}px`
-                : undefined,
-            }}>{seg.text || " "}</span>
+            {parseInlineMarkdown(seg.text || "").map((p, pi) =>
+              p.italic
+                ? <em key={pi} style={{ fontStyle: "italic" }}>{p.value}</em>
+                : p.value
+            )}
           </span>
-        ) : (
+        </span>
+      ) : (
           <span key={idx} style={{
             display: "inline-flex",
             flexDirection: "column",
