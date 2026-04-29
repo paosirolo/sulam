@@ -728,7 +728,7 @@ function CantoCard({ canto, onClick, index }) {
         <Icons.Play /> Audio
       </span>
     )}
-    {/\[[^\]]+\]/.test(canto.Content || "") && (
+    {canto.has_chords && (
       <span style={{ display: "flex", alignItems: "center", gap: 4, color: "var(--sky-500)", fontSize: "0.75rem", fontWeight: 600 }}>
         ♫ Accordi
       </span>
@@ -1401,7 +1401,7 @@ function HomePage({ onSelectCanto, search, setSearch, filters, setFilters }) {
       try {
         const { data, error } = await supabase
           .from("sulam_canti")
-          .select("id,Title,Autori,Album,Anno,Tempo_Liturgico,Momento_Messa,Genere,link_ascolto,view_count")
+          .select("id,Title,Autori,Album,Anno,Tempo_Liturgico,Momento_Messa,Genere,link_ascolto,view_count,has_chords")
           .order("Title", { ascending: true });
         if (error || !data?.length) {
           // Use mock data if Supabase not configured
