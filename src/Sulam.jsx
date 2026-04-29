@@ -721,11 +721,20 @@ function CantoCard({ canto, onClick, index }) {
         ))}
       </div>
 
-      {canto.link_ascolto && (
-        <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 4, color: "var(--sky-400)", fontSize: "0.75rem" }}>
-          <Icons.Play /> <span style={{ fontWeight: 600 }}>Audio disponibile</span>
-        </div>
-      )}
+      {(canto.link_ascolto || /\[[^\]]+\]/.test(canto.Content || "")) && (
+  <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 8 }}>
+    {canto.link_ascolto && (
+      <span style={{ display: "flex", alignItems: "center", gap: 4, color: "var(--sky-400)", fontSize: "0.75rem", fontWeight: 600 }}>
+        <Icons.Play /> Audio
+      </span>
+    )}
+    {/\[[^\]]+\]/.test(canto.Content || "") && (
+      <span style={{ display: "flex", alignItems: "center", gap: 4, color: "var(--sky-500)", fontSize: "0.75rem", fontWeight: 600 }}>
+        ♫ Accordi
+      </span>
+    )}
+  </div>
+)}
     </div>
   );
 }
@@ -1355,7 +1364,7 @@ function CantoViewer({ canto, onBack }) {
       }}>
         <div>
           <p style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--gray-600)" }}>Hai trovato un errore?</p>
-          <p style={{ fontSize: "0.72rem", color: "var(--gray-400)" }}>Aiutaci a migliorare il canzoniere</p>
+          <p style={{ fontSize: "0.72rem", color: "var(--gray-400)" }}>Aiutaci a migliorare il sito</p>
         </div>
         <button className="btn btn-secondary" onClick={() => setShowSegnalazione(true)} style={{ gap: 6, whiteSpace: "nowrap" }}>
           <Icons.Flag /> Segnala modifica
@@ -1461,23 +1470,35 @@ function HomePage({ onSelectCanto, search, setSearch, filters, setFilters }) {
             {allCanti.length > 0 ? `${allCanti.length} canti disponibili` : "Canzoniere musicale"}
           </p>
           <div style={{ position: "relative" }}>
-            <div style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--sky-300)" }}>
-              <Icons.Search />
-            </div>
-            <input
-              className="input"
-              value={search}
-              onChange={e => { setSearch(e.target.value); setDisplayCount(PAGE_SIZE); }}
-              placeholder="Cerca per titolo o autore..."
-              style={{
-                paddingLeft: 44, fontSize: "1rem",
-                border: "2px solid rgba(255,255,255,0.3)",
-                background: "rgba(255,255,255,0.95)",
-                backdropFilter: "blur(8px)",
-                boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-              }}
-            />
-          </div>
+  <div style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--sky-300)" }}>
+    <Icons.Search />
+  </div>
+  <input
+    className="input"
+    value={search}
+    onChange={e => { setSearch(e.target.value); setDisplayCount(PAGE_SIZE); }}
+    placeholder="Cerca per titolo o autore..."
+    style={{
+      paddingLeft: 44, paddingRight: search ? 40 : 16, fontSize: "1rem",
+      border: "2px solid rgba(255,255,255,0.3)",
+      background: "rgba(255,255,255,0.95)",
+      backdropFilter: "blur(8px)",
+      boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+    }}
+  />
+  {search && (
+    <button
+      onClick={() => { setSearch(""); setDisplayCount(PAGE_SIZE); }}
+      style={{
+        position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)",
+        background: "none", border: "none", cursor: "pointer",
+        color: "var(--gray-400)", padding: 4, display: "flex", alignItems: "center",
+      }}
+    >
+      <Icons.Close />
+    </button>
+  )}
+</div>
         </div>
       </div>
 
