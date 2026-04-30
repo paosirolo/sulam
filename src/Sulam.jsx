@@ -1134,7 +1134,7 @@ function CantoViewer({ canto, onBack }) {
   return (
     <div className="fade-in" style={{ maxWidth: 720, margin: "0 auto", padding: "20px 16px 100px" }}>
       {/* Header info */}
-      <div className="no-print" style={{
+      <div style={{
         background: "white", borderRadius: "var(--radius)",
         padding: "20px 24px", marginBottom: 20,
         boxShadow: "var(--shadow-sm)", border: "1px solid var(--sky-100)",
@@ -1276,14 +1276,7 @@ function CantoViewer({ canto, onBack }) {
         }}
         className={isScrolling ? "scrolling-active" : ""}
       >
-      {/* Visibile solo in stampa */}
-<div className="no-print print-only" style={{ marginBottom: 4 }}>
-  <h1 style={{ fontSize: 22, fontWeight: 800, marginBottom: 6 }}>{canto.Title}</h1>
-  {canto.Autori && <p style={{ fontSize: 13, color: "#555", marginBottom: 2 }}><strong>Autori:</strong> {canto.Autori}</p>}
-  {canto.Album && <p style={{ fontSize: 13, color: "#555", marginBottom: 2 }}><strong>Album:</strong> {canto.Album}</p>}
-  {canto.Anno && <p style={{ fontSize: 13, color: "#555", marginBottom: 6 }}><strong>Anno:</strong> {canto.Anno}</p>}
-  <hr style={{ borderTop: "1px solid #ccc", marginBottom: 8 }} />
-</div>
+
         {canto.Content ? (
           parseChordPro(canto.Content).map((section, i) => (
             <div
