@@ -494,6 +494,12 @@ const GlobalStyle = () => (
 
   .print-only { display: block !important; }
 
+  /* Riduci spazi tra sezioni */
+  .fade-in > div { margin-bottom: 4px !important; padding: 0 !important; }
+  
+  /* Spazio minimo tra strofe e ritornelli */
+  .fade-in > div > div { margin-bottom: 6px !important; }
+
   /* Margini pagina */
   @page {
     margin: 0.6cm 0.35cm 0.45cm 0.8cm;
@@ -1128,7 +1134,7 @@ function CantoViewer({ canto, onBack }) {
   return (
     <div className="fade-in" style={{ maxWidth: 720, margin: "0 auto", padding: "20px 16px 100px" }}>
       {/* Header info */}
-      <div style={{
+      <div className="no-print" style={{
         background: "white", borderRadius: "var(--radius)",
         padding: "20px 24px", marginBottom: 20,
         boxShadow: "var(--shadow-sm)", border: "1px solid var(--sky-100)",
