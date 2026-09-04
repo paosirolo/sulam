@@ -298,7 +298,7 @@ const Icons = {
 // ============================================================
 const GlobalStyle = () => (
   <style>{`
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inconsolata:wght@400;500&display=swap');
     
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     
@@ -366,7 +366,7 @@ const GlobalStyle = () => (
     
     /* Song text */
     .song-content {
-      font-family: 'JetBrains Mono', 'Courier New', monospace;
+      font-family: 'Inconsolata', 'Courier New', monospace;
       white-space: pre-wrap;
       word-break: break-word;
       line-height: 1.9;
@@ -981,7 +981,7 @@ function ChordProLine({ line, showChords, transpose, fontSize, isChorus }) {
       display: "flex",
       flexWrap: "wrap",
       alignItems: "flex-end",
-      fontFamily: "'JetBrains Mono', 'Courier New', monospace",
+      fontFamily: "'Inconsolata', 'Courier New', monospace",
       fontSize: `${fontSize}px`,
       marginBottom: 0,
     }}>
