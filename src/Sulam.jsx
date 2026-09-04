@@ -942,6 +942,12 @@ function ChordProLine({ line, showChords, transpose, fontSize, isChorus }) {
   const chordHeightPx = chordSize * 1.5;
   const textColor = isChorus ? "var(--sky-700)" : "var(--gray-700)";
   const fontWeight = isChorus ? 700 : 400;
+  // Riga di soli accordi: collassa l'altezza della riga testo sotto gli accordi
+  const chordsOnly = line.replace(/\[[^\]]+\]/g, "").trim() === "";
+  const textLineHeight = chordsOnly ? 0 : `${fontSize * 1.7}px`;
+  const textRowStyle = chordsOnly
+    ? { lineHeight: 0, height: 0, overflow: "hidden", fontSize: 0 }
+    : { lineHeight: textLineHeight };
 
   // Tokenizza la riga in una lista flat di token: { type: "chord"|"text", value }
   const tokens = [];
@@ -984,6 +990,7 @@ function ChordProLine({ line, showChords, transpose, fontSize, isChorus }) {
       fontFamily: "'Roboto Mono', 'Courier New', monospace",
       fontSize: `${fontSize}px`,
       marginBottom: 0,
+      lineHeight: chordsOnly ? 0 : undefined,
     }}>
       {segments.map((seg, idx) => {
         if (seg.chord) {
@@ -1005,19 +1012,33 @@ function ChordProLine({ line, showChords, transpose, fontSize, isChorus }) {
               <span style={{
                 fontWeight,
                 color: textColor,
-                lineHeight: `${fontSize * 1.7}px`,
                 whiteSpace: "pre",
                 minWidth: seg.text.trim() === ""
                   ? `${(seg.chord.length + 1) * chordSize * 0.62}px`
                   : undefined,
+                ...textRowStyle,
               }}>
-                {parseInlineMarkdown(seg.text || " ").map((p, pi) =>
-                  p.italic
-                    ? <em key={pi} style={{ fontStyle: "italic" }}>{p.value}</em>
-                    : p.value
-                )}
+                {chordsOnly
+                  ? null
+                  : parseInlineMarkdown(seg.text || " ").map((p, pi) =>
+                      p.italic
+                        ? <em key={pi} style={{ fontStyle: "italic" }}>{p.value}</em>
+                        : p.value
+                    )}
               </span>
             </span>
+          );
+        }
+
+        // Segmenti di solo testo: su righe chords-only collassa anche lo spacer nascosto
+        if (chordsOnly) {
+          return (
+            <span key={idx} style={{
+              display: "inline-block",
+              width: seg.text.length * fontSize * 0.62,
+              height: 0,
+              overflow: "hidden",
+            }} />
           );
         }
 
@@ -1035,7 +1056,7 @@ function ChordProLine({ line, showChords, transpose, fontSize, isChorus }) {
             <span style={{
               fontWeight,
               color: textColor,
-              lineHeight: `${fontSize * 1.7}px`,
+              lineHeight: textLineHeight,
               whiteSpace: "pre",
             }}>
               {parseInlineMarkdown(seg.text || "").map((p, pi) =>
