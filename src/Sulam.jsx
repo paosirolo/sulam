@@ -109,10 +109,10 @@ const supabase = {
 };
 
 // ============================================================
-// CACHE DATI (scadenza 30 minuti via localStorage)
+// CACHE DATI (scadenza 90 minuti via localStorage)
 // ============================================================
 const CACHE_TS_KEY = "sulam_data_cache_ts";
-const CACHE_TTL_MS = 30 * 60 * 1000;
+const CACHE_TTL_MS = 90 * 60 * 1000;
 
 function isDataCacheStale() {
   try {
