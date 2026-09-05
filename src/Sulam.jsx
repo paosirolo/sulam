@@ -51,9 +51,23 @@ const supabase = {
           const finalUrl = url + (filters.length ? "&" + filters.join("&") : "") + orderStr;
           const fetchHeaders = { ...headers };
           if (rangeHeader) fetchHeaders["Range"] = rangeHeader;
-          return fetch(finalUrl, { headers: fetchHeaders })
-            .then(r => r.json())
-            .then(data => resolve({ data, error: null }))
+          const stale = isDataCacheStale();
+          if (stale) fetchHeaders["X-Sulam-Cache"] = "refresh";
+          return fetch(finalUrl, {
+            headers: fetchHeaders,
+            cache: stale ? "reload" : "default",
+          })
+            .then(async (r) => {
+              const data = await r.json();
+              if (
+                stale &&
+                r.ok &&
+                r.headers.get("X-Sulam-Cache-Status") !== "cache"
+              ) {
+                markDataCacheUpdated();
+              }
+              resolve({ data, error: null });
+            })
             .catch(err => reject({ data: null, error: err }));
         },
       };
@@ -93,6 +107,70 @@ const supabase = {
     body: JSON.stringify(params),
   }).then(r => ({ error: r.ok ? null : r.statusText })),
 };
+
+// ============================================================
+// CACHE DATI (scadenza 30 minuti via localStorage)
+// ============================================================
+const CACHE_TS_KEY = "sulam_data_cache_ts";
+const CACHE_TTL_MS = 30 * 60 * 1000;
+
+function isDataCacheStale() {
+  try {
+    const ts = parseInt(localStorage.getItem(CACHE_TS_KEY) || "0", 10);
+    if (!Number.isFinite(ts) || ts <= 0) return true;
+    return Date.now() - ts > CACHE_TTL_MS;
+  } catch {
+    return true;
+  }
+}
+
+function markDataCacheUpdated() {
+  try {
+    localStorage.setItem(CACHE_TS_KEY, String(Date.now()));
+  } catch {
+    // ignore quota / private mode
+  }
+}
+
+/** Se la cache ha >30 min, forza fetch rete e sovrascrive Cache API. Offline → lascia la cache. */
+async function refreshDataCacheIfStale() {
+  if (!isDataCacheStale()) return;
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return;
+
+  try {
+    const url = `${SUPABASE_URL}/rest/v1/sulam_canti?select=*`;
+    const req = new Request(url, {
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        "X-Sulam-Cache": "refresh",
+      },
+      cache: "reload",
+    });
+    const res = await fetch(req);
+    if (!res.ok) return;
+
+    // Se la risposta arriva dalla cache SW (offline), non aggiornare il timestamp
+    if (res.headers.get("X-Sulam-Cache-Status") === "cache") return;
+
+    if (typeof caches !== "undefined") {
+      try {
+        const keys = await caches.keys();
+        const cantiKeys = keys.filter((k) => k.startsWith("sulam-canti-"));
+        // Svuota le cache canti obsolete, poi scrive i dati freschi
+        await Promise.all(cantiKeys.map((key) => caches.delete(key)));
+        const cache = await caches.open("sulam-canti-v2");
+        await cache.put(req, res.clone());
+      } catch {
+        // ignore cache write errors
+      }
+    }
+
+    markDataCacheUpdated();
+  } catch {
+    // Offline o errore di rete: resta la cache esistente
+  }
+}
 
 // ============================================================
 // MOCK DATA per demo (rimosso quando connetti Supabase)
@@ -2458,14 +2536,51 @@ export default function App() {
   const [showRichiesta, setShowRichiesta] = useState(false);
   const [homeSearch, setHomeSearch] = useState("");
   const [homeFilters, setHomeFilters] = useState({});
+  const cantoLoadIdRef = useRef(0);
 
-  useEffect(() => {
-    const path = window.location.pathname || "";
+  const clearCanto = useCallback(() => {
+    setSelectedCanto(null);
+    setCantoFull(null);
+    setLoadingCanto(false);
+  }, []);
+
+  const loadCantoById = useCallback(async (id) => {
+    const loadId = ++cantoLoadIdRef.current;
+    setLoadingCanto(true);
+    setPage("canto");
+    try {
+      const { data } = await supabase
+        .from("sulam_canti")
+        .select("*")
+        .eq("id", id);
+      if (loadId !== cantoLoadIdRef.current) return;
+      if (data && data.length > 0) {
+        setCantoFull(data[0]);
+        setSelectedCanto(data[0]);
+      } else {
+        setCantoFull(null);
+        setSelectedCanto(null);
+      }
+    } catch {
+      if (loadId !== cantoLoadIdRef.current) return;
+      setCantoFull(null);
+      setSelectedCanto(null);
+    } finally {
+      if (loadId === cantoLoadIdRef.current) setLoadingCanto(false);
+    }
+  }, []);
+
+  const applyLocation = useCallback((pathname, historyState = null) => {
+    const path = pathname || "/";
     const listaMatch = path.match(/^\/lista\/([^/]+)/);
     const cantoMatch = path.match(/^\/canto\/(\d+)/);
 
+    window.scrollTo(0, 0);
+
     if (listaMatch && listaMatch[1]) {
+      clearCanto();
       setListaSlug(listaMatch[1]);
+      setPreviousPage("lista");
       setPage("lista");
       return;
     }
@@ -2473,67 +2588,118 @@ export default function App() {
     if (cantoMatch && cantoMatch[1]) {
       const id = parseInt(cantoMatch[1], 10);
       if (!Number.isFinite(id)) return;
-
-      let cancelled = false;
-      const load = async () => {
-        setLoadingCanto(true);
-        try {
-          const { data } = await supabase
-            .from("sulam_canti")
-            .select("*")
-            .eq("id", id);
-          if (cancelled) return;
-          if (data && data.length > 0) {
-            setCantoFull(data[0]);
-            setSelectedCanto(data[0]);
-            setPage("canto");
-          } else {
-            setCantoFull(null);
-          }
-        } catch {
-          if (!cancelled) setCantoFull(null);
-        } finally {
-          if (!cancelled) setLoadingCanto(false);
-        }
-      };
-
-      load();
-      return () => {
-        cancelled = true;
-      };
+      const from =
+        historyState?.from ||
+        (historyState?.listaSlug ? "lista" : "home");
+      if (historyState?.listaSlug) setListaSlug(historyState.listaSlug);
+      setPreviousPage(from === "lista" ? "lista" : "home");
+      loadCantoById(id);
+      return;
     }
+
+    clearCanto();
+    if (path === "/about" || historyState?.page === "about") {
+      setPage("about");
+      return;
+    }
+    if (path === "/install" || historyState?.page === "install") {
+      setPage("install");
+      return;
+    }
+    if (path === "/privacy" || historyState?.page === "privacy") {
+      setPage("privacy");
+      return;
+    }
+
+    setPage("home");
+  }, [clearCanto, loadCantoById]);
+
+  // Boot: cache fresca + sync URL + popstate
+  useEffect(() => {
+    refreshDataCacheIfStale();
+
+    const path = window.location.pathname || "/";
+    const listaMatch = path.match(/^\/lista\/([^/]+)/);
+    const cantoMatch = path.match(/^\/canto\/(\d+)/);
+
+    // Normalizza history.state sulla entry iniziale
+    try {
+      if (listaMatch && listaMatch[1]) {
+        window.history.replaceState(
+          { page: "lista", listaSlug: listaMatch[1] },
+          "",
+          path
+        );
+      } else if (cantoMatch && cantoMatch[1]) {
+        window.history.replaceState(
+          { page: "canto", cantoId: parseInt(cantoMatch[1], 10), from: "home" },
+          "",
+          path
+        );
+      } else {
+        window.history.replaceState({ page: "home" }, "", path === "/" ? "/" : path);
+      }
+    } catch {
+      // ignore
+    }
+
+    applyLocation(path, window.history.state);
+
+    const onPopState = (event) => {
+      applyLocation(window.location.pathname || "/", event.state);
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+    // Solo al mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleNavigate = useCallback((dest) => {
+    clearCanto();
     setPage(dest);
-    if (dest !== "canto") { setSelectedCanto(null); setCantoFull(null); }
     window.scrollTo(0, 0);
-    if (dest === "home") {
-      try {
-        window.history.pushState({}, "", "/");
-      } catch {
-        // ignore history errors
-      }
+    const path =
+      dest === "home" ? "/" :
+      dest === "about" ? "/about" :
+      dest === "install" ? "/install" :
+      dest === "privacy" ? "/privacy" : "/";
+    try {
+      window.history.pushState({ page: dest }, "", path);
+    } catch {
+      // ignore history errors
     }
-  }, []);
+  }, [clearCanto]);
 
   const handleSelectCanto = useCallback(async (canto) => {
+    const from = page;
+    const slug = listaSlug;
     setSelectedCanto(canto);
-    setPreviousPage(page);
+    setPreviousPage(from);
     setPage("canto");
     setLoadingCanto(true);
     window.scrollTo(0, 0);
     try {
-      window.history.pushState({}, "", `/canto/${canto.id}`);
+      window.history.pushState(
+        {
+          page: "canto",
+          cantoId: canto.id,
+          from,
+          listaSlug: from === "lista" ? slug : null,
+        },
+        "",
+        `/canto/${canto.id}`
+      );
     } catch {
       // ignore history errors
     }
 
+    const loadId = ++cantoLoadIdRef.current;
     try {
       const { data } = await supabase
         .from("sulam_canti")
         .select("*")
         .eq("id", canto.id);
+      if (loadId !== cantoLoadIdRef.current) return;
       if (data && data.length > 0) {
         setCantoFull(data[0]);
       } else {
@@ -2541,27 +2707,39 @@ export default function App() {
         setCantoFull(mock || canto);
       }
     } catch {
+      if (loadId !== cantoLoadIdRef.current) return;
       setCantoFull(canto);
     }
-    setLoadingCanto(false);
-  }, [page]);
+    if (loadId === cantoLoadIdRef.current) setLoadingCanto(false);
+  }, [page, listaSlug]);
 
   const handleBack = useCallback(() => {
-    setSelectedCanto(null);
-    setCantoFull(null);
+    const st = window.history.state;
+    // Se siamo arrivati al canto con pushState interno, torna indietro nella history
+    // (lista → canto oppure home → canto), così back browser e tasto UI coincidono.
+    if (st && st.page === "canto" && st.from) {
+      window.history.back();
+      return;
+    }
+    // Deep link diretto a /canto/:id: niente entry precedente in-app
+    clearCanto();
     window.scrollTo(0, 0);
     if (previousPage === "lista" && listaSlug) {
       setPage("lista");
       try {
-        window.history.pushState({}, "", `/lista/${listaSlug}`);
+        window.history.pushState(
+          { page: "lista", listaSlug },
+          "",
+          `/lista/${listaSlug}`
+        );
       } catch {}
     } else {
       setPage("home");
       try {
-        window.history.pushState({}, "", `/`);
+        window.history.pushState({ page: "home" }, "", "/");
       } catch {}
     }
-  }, [previousPage, listaSlug]);
+  }, [previousPage, listaSlug, clearCanto]);
 
   return (
     <>

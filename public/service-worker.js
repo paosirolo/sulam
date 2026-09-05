@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-globals */
 
-const VERSION = "v1";
+const VERSION = "v2";
 const APP_SHELL_CACHE = `sulam-app-shell-${VERSION}`;
 const ASSET_CACHE = `sulam-assets-${VERSION}`;
 const SUPABASE_CACHE = `sulam-supabase-${VERSION}`;
@@ -102,15 +102,26 @@ async function cacheFirstWithRevalidate(event, cacheName) {
   return new Response("Offline", { status: 503, statusText: "Offline" });
 }
 
+function withCacheStatus(response, status) {
+  if (!response) return response;
+  const headers = new Headers(response.headers);
+  headers.set("X-Sulam-Cache-Status", status);
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
 async function networkFirst(event, cacheName) {
   const cache = await caches.open(cacheName);
   try {
     const network = await fetch(event.request);
     await cachePut(cacheName, event.request, network.clone());
-    return network;
+    return withCacheStatus(network, "network");
   } catch {
     const cached = await cache.match(event.request);
-    if (cached) return cached;
+    if (cached) return withCacheStatus(cached, "cache");
     return new Response("Offline", { status: 503, statusText: "Offline" });
   }
 }
@@ -148,12 +159,26 @@ self.addEventListener("fetch", (event) => {
   }
 
   // Supabase REST: cache-first (stale-while-revalidate) for canti, network-first for the rest.
+  // X-Sulam-Cache: refresh → network-first (sovrascrive la cache; fallback cache se offline).
   if (isSupabaseRequest(url)) {
     if (isCantiRequest(url)) {
-      event.respondWith(cacheFirstWithRevalidate(event, CANTI_CACHE));
+      const forceRefresh =
+        event.request.headers.get("X-Sulam-Cache") === "refresh";
+      event.respondWith(
+        forceRefresh
+          ? networkFirst(event, CANTI_CACHE)
+          : cacheFirstWithRevalidate(event, CANTI_CACHE)
+      );
     } else {
       event.respondWith(networkFirst(event, SUPABASE_CACHE));
     }
+  }
+});
+
+self.addEventListener("message", (event) => {
+  const type = event.data && event.data.type;
+  if (type === "CLEAR_CANTI_CACHE") {
+    event.waitUntil(caches.delete(CANTI_CACHE));
   }
 });
 
