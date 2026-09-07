@@ -329,7 +329,7 @@ const BADGE_COLORS = {
 };
 
 function Badge({ label }) {
-  const style = BADGE_COLORS[label] || { bg: "#F1F5F9", color: "#475569" };
+  const style = BADGE_COLORS[label] || { bg: "var(--gray-100)", color: "var(--gray-600)" };
   return (
     <span style={{
       background: style.bg,
@@ -369,6 +369,17 @@ const Icons = {
   ExternalLink: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>,
   Menu: () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>,
   Check: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>,
+  Sun: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+    </svg>
+  ),
+  Moon: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a7 7 0 0 0 11.5 11.5z" />
+    </svg>
+  ),
 };
 
 // ============================================================
@@ -392,20 +403,76 @@ const GlobalStyle = () => (
       --sky-800: #075985;
       --sky-900: #0c4a6e;
       --white: #ffffff;
+      --surface: #ffffff;
+      --on-primary: #ffffff;
       --gray-50: #f8fafc;
       --gray-100: #f1f5f9;
       --gray-200: #e2e8f0;
       --gray-300: #cbd5e1;
-      --gray-400: #94a3b8;
-      --gray-500: #64748b;
-      --gray-600: #475569;
-      --gray-700: #334155;
-      --gray-800: #1e293b;
+      --gray-400: #64748b;
+      --gray-500: #475569;
+      --gray-600: #334155;
+      --gray-700: #1e293b;
+      --gray-800: #0f172a;
+      --danger: #dc2626;
+      --brand-from: #0ea5e9;
+      --brand-to: #075985;
+      --overlay: rgba(12, 74, 110, 0.35);
+      --focus-ring: 0 0 0 3px rgba(14, 165, 233, 0.15);
+      --header-shadow: 0 2px 12px rgba(14, 165, 233, 0.08);
+      --hero-muted: rgba(255, 255, 255, 0.82);
+      --hero-border: rgba(255, 255, 255, 0.35);
+      --hero-input-bg: rgba(255, 255, 255, 0.95);
+      --hero-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+      --hero-dot: rgba(255, 255, 255, 0.14);
+      --scroll-pulse: rgba(14, 165, 233, 0.3);
       --shadow-sm: 0 1px 3px rgba(14,165,233,0.08), 0 1px 2px rgba(14,165,233,0.06);
       --shadow: 0 4px 16px rgba(14,165,233,0.1), 0 2px 6px rgba(14,165,233,0.06);
       --shadow-lg: 0 12px 40px rgba(14,165,233,0.15), 0 4px 12px rgba(14,165,233,0.1);
       --radius: 14px;
       --radius-sm: 8px;
+    }
+
+    /* Dark theme — superfici scure, testo chiaro (WCAG AA ≥ 4.5:1) */
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --sky-50: #0b1220;
+      --sky-100: #151d2e;
+      --sky-200: #243044;
+      --sky-300: #3a4d66;
+      --sky-400: #38bdf8;
+      --sky-500: #0ea5e9;
+      --sky-600: #38bdf8;
+      --sky-700: #7dd3fc;
+      --sky-800: #bae6fd;
+      --sky-900: #e0f2fe;
+      --white: #141c2b;
+      --surface: #141c2b;
+      --on-primary: #ffffff;
+      --gray-50: #0f172a;
+      --gray-100: #1e293b;
+      --gray-200: #334155;
+      --gray-300: #475569;
+      --gray-400: #a8b6c8;
+      --gray-500: #b6c2d1;
+      --gray-600: #d0d8e4;
+      --gray-700: #e8edf4;
+      --gray-800: #f5f7fb;
+      --danger: #f87171;
+      --brand-from: #0284c7;
+      --brand-to: #0c4a6e;
+      --overlay: rgba(0, 0, 0, 0.55);
+      --focus-ring: 0 0 0 3px rgba(56, 189, 248, 0.25);
+      --header-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+      --hero-muted: rgba(255, 255, 255, 0.85);
+      --hero-border: rgba(255, 255, 255, 0.35);
+      --hero-input-bg: rgba(20, 28, 43, 0.92);
+      --hero-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+      --hero-dot: rgba(255, 255, 255, 0.1);
+      --scroll-pulse: rgba(56, 189, 248, 0.35);
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.25);
+      --shadow: 0 4px 16px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3);
+      --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.35);
     }
     
     html { scroll-behavior: smooth; }
@@ -461,9 +528,10 @@ const GlobalStyle = () => (
     }
     .btn:active { transform: scale(0.97); }
     .btn-primary {
-      background: var(--sky-500); color: white;
+      background: var(--sky-500); color: var(--on-primary);
     }
     .btn-primary:hover { background: var(--sky-600); box-shadow: var(--shadow); }
+    html[data-theme="dark"] .btn-primary:hover { background: var(--sky-400); }
     .btn-secondary {
       background: var(--sky-100); color: var(--sky-700);
     }
@@ -475,7 +543,7 @@ const GlobalStyle = () => (
     
     /* Card */
     .card {
-      background: white;
+      background: var(--surface);
       border-radius: var(--radius);
       box-shadow: var(--shadow-sm);
       border: 1px solid var(--sky-100);
@@ -494,19 +562,20 @@ const GlobalStyle = () => (
       border-radius: var(--radius-sm);
       font-family: 'Montserrat', sans-serif;
       font-size: 0.9rem;
-      background: white;
+      background: var(--surface);
       color: var(--gray-800);
       transition: all 0.2s;
       outline: none;
     }
-    .input:focus { border-color: var(--sky-400); box-shadow: 0 0 0 3px rgba(14,165,233,0.1); }
+    .input:focus { border-color: var(--sky-400); box-shadow: var(--focus-ring); }
+    .input::placeholder { color: var(--gray-400); }
     
     select.input { appearance: none; cursor: pointer; }
     
     /* Overlay */
     .overlay {
       position: fixed; inset: 0;
-      background: rgba(12,74,110,0.3);
+      background: var(--overlay);
       backdrop-filter: blur(4px);
       z-index: 100;
     }
@@ -523,7 +592,7 @@ const GlobalStyle = () => (
     }
     
     /* Auto-scroll highlight */
-    @keyframes scrollPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(14,165,233,0); } 50% { box-shadow: 0 0 0 4px rgba(14,165,233,0.3); } }
+    @keyframes scrollPulse { 0%,100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 0 4px var(--scroll-pulse); } }
     .scrolling-active { animation: scrollPulse 2s infinite; }
     
     /* Toolbar floating */
@@ -590,12 +659,77 @@ const GlobalStyle = () => (
 );
 
 // ============================================================
+// THEME (light / dark)
+// ============================================================
+const THEME_KEY = "sulam-theme";
+
+function getSystemTheme() {
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+function getStoredTheme() {
+  try {
+    const t = localStorage.getItem(THEME_KEY);
+    if (t === "light" || t === "dark") return t;
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute("content", theme === "dark" ? "#0b1220" : "#0ea5e9");
+}
+
+function useTheme() {
+  const [theme, setTheme] = useState(() => {
+    if (typeof document === "undefined") return "light";
+    return (
+      document.documentElement.getAttribute("data-theme") ||
+      getStoredTheme() ||
+      getSystemTheme()
+    );
+  });
+
+  useEffect(() => {
+    applyTheme(theme);
+  }, [theme]);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const onChange = () => {
+      if (getStoredTheme()) return;
+      const next = mq.matches ? "dark" : "light";
+      setTheme(next);
+    };
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  const toggleTheme = useCallback(() => {
+    setTheme((prev) => {
+      const next = prev === "dark" ? "light" : "dark";
+      try {
+        localStorage.setItem(THEME_KEY, next);
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  }, []);
+
+  return [theme, toggleTheme];
+}
+
+// ============================================================
 // HEADER
 // ============================================================
-function Header({ onMenuToggle, showBack, onBack, onNavigate }) {
+function Header({ onMenuToggle, showBack, onBack, onNavigate, theme, onToggleTheme }) {
   return (
     <header style={{
-      background: "white",
+      background: "var(--surface)",
       borderBottom: "1px solid var(--sky-100)",
       padding: "0 20px",
       height: "60px",
@@ -605,7 +739,7 @@ function Header({ onMenuToggle, showBack, onBack, onNavigate }) {
       position: "sticky",
       top: 0,
       zIndex: 50,
-      boxShadow: "0 2px 12px rgba(14,165,233,0.08)",
+      boxShadow: "var(--header-shadow)",
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         {showBack ? (
@@ -627,7 +761,7 @@ function Header({ onMenuToggle, showBack, onBack, onNavigate }) {
               fontFamily: "'Montserrat', sans-serif",
               fontWeight: 900,
               fontSize: "1.3rem",
-              background: "linear-gradient(135deg, var(--sky-500), var(--sky-800))",
+              background: "linear-gradient(135deg, var(--brand-from), var(--brand-to))",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               letterSpacing: "-0.02em",
@@ -645,6 +779,15 @@ function Header({ onMenuToggle, showBack, onBack, onNavigate }) {
         </button>
         <button className="btn btn-ghost" onClick={() => onNavigate("install")} style={{ fontSize: "0.8rem", padding: "8px 12px" }}>
           installa
+        </button>
+        <button
+          className="btn btn-ghost"
+          onClick={onToggleTheme}
+          aria-label={theme === "dark" ? "Attiva tema chiaro" : "Attiva tema scuro"}
+          title={theme === "dark" ? "Tema chiaro" : "Tema scuro"}
+          style={{ padding: "8px", borderRadius: "50%" }}
+        >
+          {theme === "dark" ? <Icons.Sun /> : <Icons.Moon />}
         </button>
       </nav>
     </header>
@@ -735,7 +878,7 @@ function FilterPanel({ filters, setFilters, canti, isDrawer, onClose }) {
         <div className="overlay" onClick={onClose} />
         <div className="slide-in" style={{
           position: "fixed", left: 0, top: 0, bottom: 0, width: 300,
-          background: "white", zIndex: 101,
+          background: "var(--surface)", zIndex: 101,
           boxShadow: "var(--shadow-lg)",
         }}>
           {content}
@@ -747,7 +890,7 @@ function FilterPanel({ filters, setFilters, canti, isDrawer, onClose }) {
   return (
     <aside style={{
       width: 240, flexShrink: 0,
-      background: "white",
+      background: "var(--surface)",
       borderRadius: "var(--radius)",
       padding: "20px",
       boxShadow: "var(--shadow-sm)",
@@ -869,7 +1012,7 @@ function SegnalazioneModal({ canto, onClose }) {
       <div style={{
         position: "fixed", left: "50%", top: "50%",
         transform: "translate(-50%, -50%)",
-        background: "white", borderRadius: "var(--radius)",
+        background: "var(--surface)", borderRadius: "var(--radius)",
         padding: "28px", width: "min(480px, calc(100vw - 32px))",
         zIndex: 102, boxShadow: "var(--shadow-lg)",
         animation: "fadeIn 0.25s ease",
@@ -926,7 +1069,7 @@ function SegnalazioneModal({ canto, onClose }) {
               />
             </div>
             {stato === "error" && (
-              <p style={{ color: "#EF4444", fontSize: "0.8rem", marginBottom: 12 }}>
+              <p style={{ color: "var(--danger)", fontSize: "0.8rem", marginBottom: 12 }}>
                 Errore nell'invio. Riprova.
               </p>
             )}
@@ -1234,7 +1377,7 @@ function CantoViewer({ canto, onBack }) {
     <div className="fade-in" style={{ maxWidth: 720, margin: "0 auto", padding: "20px 16px 100px" }}>
       {/* Header info */}
       <div style={{
-        background: "white", borderRadius: "var(--radius)",
+        background: "var(--surface)", borderRadius: "var(--radius)",
         padding: "20px 24px", marginBottom: 20,
         boxShadow: "var(--shadow-sm)", border: "1px solid var(--sky-100)",
       }}>
@@ -1276,7 +1419,7 @@ function CantoViewer({ canto, onBack }) {
 
       {/* Toolbar */}
       <div className="no-print" style={{
-        background: "white", borderRadius: "var(--radius)",
+        background: "var(--surface)", borderRadius: "var(--radius)",
         padding: "12px 16px", marginBottom: 20,
         boxShadow: "var(--shadow-sm)", border: "1px solid var(--sky-100)",
         display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap",
@@ -1368,7 +1511,7 @@ function CantoViewer({ canto, onBack }) {
       <div
         ref={contentRef}
         style={{
-          background: "white", borderRadius: "var(--radius)",
+          background: "var(--surface)", borderRadius: "var(--radius)",
           padding: "28px 28px",
           boxShadow: "var(--shadow-sm)", border: "1px solid var(--sky-100)",
           marginBottom: 20,
@@ -1554,21 +1697,21 @@ function HomePage({ onSelectCanto, search, setSearch, filters, setFilters }) {
     <div>
       {/* Hero */}
       <div style={{
-        background: "linear-gradient(135deg, var(--sky-500) 0%, var(--sky-700) 100%)",
+        background: "linear-gradient(135deg, var(--brand-from) 0%, var(--brand-to) 100%)",
         padding: "32px 20px 28px",
         position: "relative", overflow: "hidden",
       }}>
         <div style={{
           position: "absolute", inset: 0, opacity: 0.06,
-          backgroundImage: "radial-gradient(circle at 2px 2px, white 1px, transparent 0)",
+          backgroundImage: "radial-gradient(circle at 2px 2px, var(--hero-dot) 1px, transparent 0)",
           backgroundSize: "32px 32px",
         }} />
         <div style={{ maxWidth: 700, margin: "0 auto", position: "relative" }}>
-          <p style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.75rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>
+          <p style={{ color: "var(--hero-muted)", fontSize: "0.75rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>
             {allCanti.length > 0 ? `${allCanti.length} canti disponibili` : "Canzoniere musicale"}
           </p>
           <div style={{ position: "relative" }}>
-  <div style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--sky-300)" }}>
+  <div style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--gray-400)" }}>
     <Icons.Search />
   </div>
   <input
@@ -1578,10 +1721,10 @@ function HomePage({ onSelectCanto, search, setSearch, filters, setFilters }) {
     placeholder="Cerca per titolo o autore..."
     style={{
       paddingLeft: 44, paddingRight: search ? 40 : 16, fontSize: "1rem",
-      border: "2px solid rgba(255,255,255,0.3)",
-      background: "rgba(255,255,255,0.95)",
+      border: "2px solid var(--hero-border)",
+      background: "var(--hero-input-bg)",
       backdropFilter: "blur(8px)",
-      boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+      boxShadow: "var(--hero-shadow)",
     }}
   />
   {search && (
@@ -1617,7 +1760,7 @@ function HomePage({ onSelectCanto, search, setSearch, filters, setFilters }) {
               Filtri
               {activeFiltersCount > 0 && (
                 <span style={{
-                  background: "var(--sky-500)", color: "white",
+                  background: "var(--sky-500)", color: "var(--on-primary)",
                   borderRadius: "50%", width: 18, height: 18,
                   display: "flex", alignItems: "center", justifyContent: "center",
                   fontSize: "0.65rem", fontWeight: 700,
@@ -1764,11 +1907,11 @@ function ListaPage({ slug, onSelectCanto }) {
       <div style={{ maxWidth: 960, margin: "0 auto", padding: "24px 16px 80px" }}>
         <div
           style={{
-            background: "linear-gradient(135deg, var(--sky-500) 0%, var(--sky-700) 100%)",
+            background: "linear-gradient(135deg, var(--brand-from) 0%, var(--brand-to) 100%)",
             borderRadius: "var(--radius)",
             padding: "24px 20px",
             marginBottom: 20,
-            color: "white",
+            color: "var(--on-primary)",
             boxShadow: "var(--shadow-sm)",
           }}
         >
@@ -1789,7 +1932,7 @@ function ListaPage({ slug, onSelectCanto }) {
   if (error) {
     return (
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "40px 16px 80px", textAlign: "center" }}>
-        <p style={{ color: "#ef4444", fontWeight: 600, marginBottom: 4 }}>{error}</p>
+        <p style={{ color: "var(--danger)", fontWeight: 600, marginBottom: 4 }}>{error}</p>
       </div>
     );
   }
@@ -1806,11 +1949,11 @@ function ListaPage({ slug, onSelectCanto }) {
     <div style={{ maxWidth: 960, margin: "0 auto", padding: "24px 16px 80px" }} className="fade-in">
       <div
         style={{
-          background: "linear-gradient(135deg, var(--sky-500) 0%, var(--sky-700) 100%)",
+          background: "linear-gradient(135deg, var(--brand-from) 0%, var(--brand-to) 100%)",
           borderRadius: "var(--radius)",
           padding: "24px 24px",
           marginBottom: 24,
-          color: "white",
+          color: "var(--on-primary)",
           boxShadow: "var(--shadow-sm)",
         }}
       >
@@ -1924,7 +2067,7 @@ function AboutPage() {
   return (
     <div style={{ maxWidth: 720, margin: "0 auto", padding: "36px 20px 80px" }} className="fade-in">
       <div style={{
-        background: "white", borderRadius: "var(--radius)",
+        background: "var(--surface)", borderRadius: "var(--radius)",
         padding: "36px 40px",
         boxShadow: "var(--shadow-sm)", border: "1px solid var(--sky-100)",
       }}>
@@ -2054,7 +2197,7 @@ function InstallPage() {
                 height: 22,
                 borderRadius: 999,
                 background: "var(--sky-500)",
-                color: "white",
+                color: "var(--on-primary)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -2083,7 +2226,7 @@ function InstallPage() {
     <div style={{ maxWidth: 820, margin: "0 auto", padding: "36px 20px 80px" }} className="fade-in">
       <div
         style={{
-          background: "white",
+          background: "var(--surface)",
           borderRadius: "var(--radius)",
           padding: "32px 36px",
           boxShadow: "var(--shadow-sm)",
@@ -2098,11 +2241,11 @@ function InstallPage() {
               height: 72,
               borderRadius: 20,
               margin: "0 auto 14px",
-              background: "linear-gradient(135deg, var(--sky-500), var(--sky-700))",
+              background: "linear-gradient(135deg, var(--brand-from), var(--brand-to))",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              color: "white",
+              color: "var(--on-primary)",
               fontSize: "1.6rem",
               fontWeight: 900,
               boxShadow: "var(--shadow)",
@@ -2188,7 +2331,7 @@ function PrivacyPage() {
   return (
     <div style={{ maxWidth: 720, margin: "0 auto", padding: "36px 20px 80px" }} className="fade-in">
       <div style={{
-        background: "white", borderRadius: "var(--radius)",
+        background: "var(--surface)", borderRadius: "var(--radius)",
         padding: "36px 40px",
         boxShadow: "var(--shadow-sm)", border: "1px solid var(--sky-100)",
       }}>
@@ -2297,7 +2440,7 @@ function RichiestaCantoModal({ onClose }) {
     borderRadius: "var(--radius-sm)",
     fontFamily: "'Montserrat', sans-serif",
     fontSize: "0.88rem",
-    background: "white",
+    background: "var(--surface)",
     color: "var(--gray-800)",
     outline: "none",
     transition: "border-color 0.2s",
@@ -2322,7 +2465,7 @@ function RichiestaCantoModal({ onClose }) {
         left: "50%",
         top: "50%",
         transform: "translate(-50%, -50%)",
-        background: "white",
+        background: "var(--surface)",
         borderRadius: "var(--radius)",
         padding: "28px 28px 24px",
         width: "min(560px, calc(100vw - 24px))",
@@ -2435,7 +2578,7 @@ function RichiestaCantoModal({ onClose }) {
             </div>
 
             {stato === "error" && (
-              <p style={{ color: "#EF4444", fontSize: "0.8rem", marginTop: 12 }}>
+              <p style={{ color: "var(--danger)", fontSize: "0.8rem", marginTop: 12 }}>
                 Errore nell'invio. Riprova.
               </p>
             )}
@@ -2466,7 +2609,7 @@ function Footer({ onNavigate, onRichiesta, isSticky }) {
   return (
     <footer style={{
       borderTop: "1px solid var(--sky-100)",
-      background: "white",
+      background: "var(--surface)",
       padding: "16px 24px",
       display: "flex",
       alignItems: "center",
@@ -2536,6 +2679,7 @@ export default function App() {
   const [showRichiesta, setShowRichiesta] = useState(false);
   const [homeSearch, setHomeSearch] = useState("");
   const [homeFilters, setHomeFilters] = useState({});
+  const [theme, toggleTheme] = useTheme();
   const cantoLoadIdRef = useRef(0);
 
   const clearCanto = useCallback(() => {
@@ -2749,6 +2893,8 @@ export default function App() {
           showBack={page === "canto"}
           onBack={handleBack}
           onNavigate={handleNavigate}
+          theme={theme}
+          onToggleTheme={toggleTheme}
         />
 
         {page === "canto" ? (
