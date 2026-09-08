@@ -917,17 +917,12 @@ function CantoCard({ canto, onClick, index }) {
       onClick={() => onClick(canto)}
       style={{ padding: "18px 20px", cursor: "pointer", animationDelay: `${Math.min(index * 0.05, 0.4)}s` }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 10 }}>
+      <div style={{ marginBottom: 10 }}>
         <h3 style={{
           fontWeight: 700, fontSize: "1rem",
           color: "var(--gray-800)", lineHeight: 1.3,
           fontFamily: "'Montserrat', sans-serif",
         }}>{canto.Title}</h3>
-        {canto.view_count > 0 && (
-          <span style={{ display: "flex", alignItems: "center", gap: 4, color: "var(--gray-400)", fontSize: "0.72rem", whiteSpace: "nowrap" }}>
-            <Icons.Eye /> {canto.view_count}
-          </span>
-        )}
       </div>
 
       {canto.Autori && (
